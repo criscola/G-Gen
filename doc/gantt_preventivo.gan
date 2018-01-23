@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><project name="Untitled Gantt Project" company="" webLink="http://" view-date="2017-12-29" view-index="0" gantt-divider-location="300" resource-divider-location="300" version="2.8.5" locale="en_US">
+    <description/>
+    <view zooming-state="default:3" id="gantt-chart">
+        <field id="tpd3" name="Name" width="167" order="0"/>
+        <field id="tpd4" name="Begin date" width="65" order="1"/>
+        <field id="tpd5" name="End date" width="64" order="2"/>
+    </view>
+    <view id="resource-table">
+        <field id="0" name="Name" width="210" order="0"/>
+        <field id="1" name="Default role" width="86" order="1"/>
+    </view>
+    <!-- -->
+    <calendars>
+        <day-types>
+            <day-type id="0"/>
+            <day-type id="1"/>
+            <default-week id="1" name="default" sun="1" mon="0" tue="0" wed="0" thu="0" fri="0" sat="1"/>
+            <only-show-weekends value="false"/>
+            <overriden-day-types/>
+            <days/>
+        </day-types>
+        <date year="2018" month="3" date="2" type="HOLIDAY"><![CDATA[Holiday on 3/2/18 12:00 AM]]></date>
+        <date year="2018" month="3" date="3" type="HOLIDAY"><![CDATA[Holiday on 3/3/18 12:00 AM]]></date>
+        <date year="2018" month="3" date="4" type="HOLIDAY"><![CDATA[Holiday on 3/4/18 12:00 AM]]></date>
+        <date year="2018" month="3" date="5" type="HOLIDAY"><![CDATA[Holiday on 3/5/18 12:00 AM]]></date>
+        <date year="2018" month="3" date="6" type="HOLIDAY"><![CDATA[Holiday on 3/6/18 12:00 AM]]></date>
+        <date year="2018" month="3" date="7" type="HOLIDAY"><![CDATA[Holiday on 3/7/18 12:00 AM]]></date>
+        <date year="2018" month="3" date="8" type="HOLIDAY"><![CDATA[Holiday on 3/8/18 12:00 AM]]></date>
+        <date year="2018" month="3" date="9" type="HOLIDAY"><![CDATA[Holiday on 3/9/18 12:00 AM]]></date>
+        <date year="2018" month="3" date="10" type="HOLIDAY"><![CDATA[Holiday on 3/10/18 12:00 AM]]></date>
+        <date year="2018" month="3" date="11" type="HOLIDAY"><![CDATA[Holiday on 3/11/18 12:00 AM]]></date>
+        <date year="2018" month="4" date="19" type="HOLIDAY"><![CDATA[Holiday on 4/19/18 12:00 AM]]></date>
+        <date year="2018" month="4" date="20" type="HOLIDAY"><![CDATA[Holiday on 4/20/18 12:00 AM]]></date>
+        <date year="2018" month="4" date="28" type="HOLIDAY"><![CDATA[Holiday on 4/28/18 12:00 AM]]></date>
+        <date year="2018" month="4" date="27" type="HOLIDAY"><![CDATA[Holiday on 4/27/18 12:00 AM]]></date>
+        <date year="2018" month="4" date="25" type="HOLIDAY"><![CDATA[Holiday on 4/25/18 12:00 AM]]></date>
+        <date year="2018" month="4" date="24" type="HOLIDAY"><![CDATA[Holiday on 4/24/18 12:00 AM]]></date>
+        <date year="2018" month="4" date="23" type="HOLIDAY"><![CDATA[Holiday on 4/23/18 12:00 AM]]></date>
+        <date year="2018" month="4" date="26" type="HOLIDAY"><![CDATA[Holiday on 4/26/18 12:00 AM]]></date>
+        <date year="2018" month="4" date="21" type="HOLIDAY"><![CDATA[Holiday on 4/21/18 12:00 AM]]></date>
+        <date year="2018" month="4" date="22" type="HOLIDAY"><![CDATA[Holiday on 4/22/18 12:00 AM]]></date>
+        <date year="2018" month="4" date="29" type="HOLIDAY"><![CDATA[Holiday on 4/29/18 12:00 AM]]></date>
+    </calendars>
+    <tasks empty-milestones="true">
+        <taskproperties>
+            <taskproperty id="tpd0" name="type" type="default" valuetype="icon"/>
+            <taskproperty id="tpd1" name="priority" type="default" valuetype="icon"/>
+            <taskproperty id="tpd2" name="info" type="default" valuetype="icon"/>
+            <taskproperty id="tpd3" name="name" type="default" valuetype="text"/>
+            <taskproperty id="tpd4" name="begindate" type="default" valuetype="date"/>
+            <taskproperty id="tpd5" name="enddate" type="default" valuetype="date"/>
+            <taskproperty id="tpd6" name="duration" type="default" valuetype="int"/>
+            <taskproperty id="tpd7" name="completion" type="default" valuetype="int"/>
+            <taskproperty id="tpd8" name="coordinator" type="default" valuetype="text"/>
+            <taskproperty id="tpd9" name="predecessorsr" type="default" valuetype="text"/>
+        </taskproperties>
+        <task id="0" name="Analisi" meeting="false" start="2018-01-17" duration="7" complete="0" expand="true">
+            <task id="5" name="Abstract" meeting="false" start="2018-01-17" duration="1" complete="0" expand="true"/>
+            <task id="6" name="Specifica requisiti" meeting="false" start="2018-01-17" duration="1" complete="0" expand="true"/>
+            <task id="13" name="Gantt" color="#8cb6ce" meeting="false" start="2018-01-17" duration="2" complete="0" expand="true"/>
+            <task id="8" name="Analisi dominio" color="#8cb6ce" meeting="false" start="2018-01-17" duration="4" complete="0" expand="true"/>
+            <task id="9" name="Analisi mezzi" color="#8cb6ce" meeting="false" start="2018-01-22" duration="4" complete="0" expand="true"/>
+        </task>
+        <task id="1" name="Progettazione" meeting="false" start="2018-01-24" duration="3" complete="0" expand="true">
+            <task id="21" name="Funzionalità" color="#8cb6ce" meeting="false" start="2018-01-24" duration="2" complete="0" expand="true"/>
+            <task id="15" name="Mockup GUI" color="#8cb6ce" meeting="false" start="2018-01-24" duration="2" complete="0" expand="true"/>
+            <task id="33" name="Use case" color="#8cb6ce" meeting="false" start="2018-01-25" duration="1" complete="0" expand="true"/>
+            <task id="37" name="Complet. analisi e prog" color="#8cb6ce" meeting="true" start="2018-01-29" duration="0" complete="0" expand="true"/>
+        </task>
+        <task id="2" name="Implementazione" meeting="false" start="2018-01-29" duration="23" complete="0" expand="true">
+            <task id="38" name="Setup ambiente" color="#8cb6ce" meeting="false" start="2018-01-29" duration="2" complete="0" expand="true"/>
+            <task id="41" name="GUI Web" color="#8cb6ce" meeting="false" start="2018-01-30" duration="2" complete="0" expand="true"/>
+            <task id="44" name="Integr. image processing" color="#8cb6ce" meeting="false" start="2018-01-31" duration="9" complete="0" expand="true"/>
+            <task id="47" name="Visualiz. risultato" color="#8cb6ce" meeting="false" start="2018-02-13" duration="5" complete="0" expand="true"/>
+            <task id="50" name="Parametriz." color="#8cb6ce" meeting="false" start="2018-02-20" duration="7" complete="0" expand="true"/>
+        </task>
+        <task id="3" name="Testing" meeting="false" start="2018-01-17" duration="1" complete="0" expand="true"/>
+        <task id="4" name="Documentazione" meeting="false" start="2018-01-17" duration="1" complete="0" expand="true"/>
+    </tasks>
+    <resources/>
+    <allocations/>
+    <vacations/>
+    <previous/>
+    <roles roleset-name="Default"/>
+    <roles roleset-name="SoftwareDevelopment"/>
+</project>
