@@ -1,6 +1,6 @@
 # Diario progetto G-Gen
 
-#### Data : 22 gennaio 2018
+#### Data : 23 gennaio 2018
 
 ####Autore : Cristiano Colangelo
 
@@ -9,29 +9,29 @@
 ## Lavori svolti
 
 - Analisi del dominio/dei mezzi
-  - Continuata documentazione inerente al capitolo
+  - Convertire SVG a .scad https://github.com/Spiritdude/SVG2SCAD
+  - Convertire immagini in .scad + lista di tools http://aggregate.org/MAKE/TRACE2SCAD/
+  - Tool python per convertire immagini in .scad https://github.com/l0b0/img2scad
 
-  - Ricercato il formato .dxf (per ev. trasformare da raster → .dxf → gcode) https://it.wikipedia.org/wiki/AutoCAD_DXF
+- Creata VM di ubuntu per testare trace2scad. Ho seguito il sito originale cercando di ricreare da me il logo klingon e ci sono riuscito. In pratica ho preso il codice (uno script bash) dal sito e l'ho incollato nelal mia VM in un file. Poi ho scaricato il logo klingon e ho fatto partire il comando :
 
-  - Ricercato il formato .dxf (per ev. trasformare da raster → .stl → gcode) https://it.wikipedia.org/wiki/STL_(formato_di_file)
+  `$ ./trace2scad.sh -o fd.scad klingon_dondewi.png`
 
-  - https://github.com/thearn/stl_tools (**tool in python** per convertire da .png a STL, non sembra il massimo perchè bisogna specificare alcune opzioni arcane di difficile comprensione, e devo tenere in conto che l'utente non deve indicare troppi parametri arcani difficili da comprendere)
+  Lo script mi ha generato un file .scad da cui ho potuto prendere il codice generato (allocato in un `module`) e scalarlo in questo modo in OpenScad:
 
-  - Sarebbe non male poter utilizzare **OpenScad** per trasformare da raster a STL, anche perchè è perfettamente utilizzabile da riga di comando. Ho testato il suo utilizzo: è semplicissimo ed efficace.  Adesso devo capire come aggiustare l'immagine a mio piacimento.
+  `scale([150,150,3]) klingon_dondewi();`
 
-    - https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Using_OpenSCAD_in_a_command_line_environment (uso da CLI) 
-    - https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export (STL import & export)
+  Infine ho renderizzato l'immagine. Ho provato anche con un'immagine per cercare di fare una litografia di essa con il comando:
 
-  - Ho capito che comunque devo leggere una heightmap per creare immagini 3D. Per le 2D basterà appiattire la **heightmap**, praticamente il plotter stamperebbe solo il contorno. Mi conviene quindi fare prima la versione 3D in modo da far uscire la 2D in modo più naturale.
-    https://en.wikipedia.org/wiki/Heightmap
+  `./trace2scad,sh -f 0 -l 8 testface.jpg`
 
-  - Ho deciso che utilizzerò probabilmente **Slic3r** da riga di comando per trasformare da STL a G-Code dato che è uno dei migliori software in circolazioni open-source e free, resta il problema della trasformazione da raster a STL.
-
-    ​
+  Ma non sono riuscito a generare un'immagine renderizzabile per il momento
 
 ## Problemi riscontrati e soluzioni
 
-\-
+- Problema nel setup di una macchina virtuale Ubuntu per fare dei test
+
+Al momento della creazione della vm mi è stato chiesto di disabilitare il Device Guard, quindi ho seguito questa guida https://kb.vmware.com/s/article/2146361
 
 ## Punto di situazione del lavoro
 
@@ -41,3 +41,4 @@ Analisi dei mezzi/dominio e Gantt
 
 - Continuare il Gantt preventivo
 - Continuare analisi del dominio/dei mezzi
+
