@@ -69,22 +69,20 @@
             <task id="15" name="Mockup GUI" color="#8cb6ce" meeting="false" start="2018-01-29" duration="3" complete="0" expand="true"/>
             <task id="37" name="Complet. analisi e prog" color="#8cb6ce" meeting="true" start="2018-01-29" duration="0" complete="0" expand="true"/>
         </task>
-        <task id="2" name="Implementazione" meeting="false" start="2018-01-29" duration="44" complete="0" expand="true">
+        <task id="2" name="Implementazione" meeting="false" start="2018-01-29" duration="37" complete="0" expand="true">
             <task id="38" name="Setup ambiente" color="#8cb6ce" meeting="false" start="2018-01-29" duration="2" complete="0" expand="true"/>
-            <task id="41" name="GUI Web" color="#8cb6ce" meeting="false" start="2018-01-30" duration="11" complete="0" expand="true">
-                <depend id="44" type="2" difference="0" hardness="Strong"/>
-            </task>
-            <task id="44" name="Integr. image processing" color="#8cb6ce" meeting="false" start="2018-02-14" duration="14" complete="0" expand="true">
+            <task id="41" name="GUI Web" color="#8cb6ce" meeting="false" start="2018-01-30" duration="20" complete="0" expand="true"/>
+            <task id="44" name="Integr. image processing" color="#8cb6ce" meeting="false" start="2018-02-21" duration="2" complete="0" expand="true">
                 <depend id="47" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="47" name="Visualiz. risultato" color="#8cb6ce" meeting="false" start="2018-03-14" duration="5" complete="0" expand="true">
+            <task id="47" name="Visualiz. risultato" color="#8cb6ce" meeting="false" start="2018-02-23" duration="5" complete="0" expand="true">
                 <depend id="50" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="50" name="Parametrizzazione" color="#8cb6ce" meeting="false" start="2018-03-21" duration="13" complete="0" expand="true">
+            <task id="50" name="Parametrizzazione" color="#8cb6ce" meeting="false" start="2018-03-12" duration="13" complete="0" expand="true">
                 <depend id="3" type="2" difference="0" hardness="Strong"/>
             </task>
         </task>
-        <task id="3" name="Testing &amp; debugging" color="#8cb6ce" meeting="false" start="2018-04-09" duration="7" complete="0" expand="true"/>
+        <task id="3" name="Testing &amp; debugging" color="#8cb6ce" meeting="false" start="2018-03-29" duration="7" complete="0" expand="true"/>
         <task id="4" name="Documentazione" meeting="false" start="2018-01-17" duration="54" complete="0" expand="true"/>
     </tasks>
     <resources/>

@@ -1,0 +1,67 @@
+{{define "title"}}GGen &#8212; Generator{{end}}
+{{define "head"}}
+<link rel="stylesheet" type="text/css" href="../assets/slick/slick.css">
+  <link rel="stylesheet" type="text/css" href="../assets/slick/slick-theme.css">
+  <style type="text/css">
+    .slider {
+        margin: 100px auto;
+    }
+
+    .slick-slide {
+      margin: 0px 20px;
+    }
+
+    .slick-slide img {
+      width: 100%;
+    }
+
+    .slick-prev:before,
+    .slick-next:before {
+      color: black;
+    }
+
+
+    .slick-slide {
+      transition: all ease-in-out .3s;
+      opacity: .2;
+    }
+    
+    .slick-active {
+      opacity: .5;
+    }
+
+    .slick-current {
+      opacity: 1;
+	}
+	</style>
+{{end}}
+{{define "content"}}
+<section class="lazy slider" data-sizes="50vw">
+    <div>
+		<p>test1</p>
+	</div>
+    <div>
+		<p>test2</p>
+    </div>
+    <div>
+		<p>test3</p>
+    </div>
+    <div>
+		<p>test4</p>
+    </div>
+  </section>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/history.js/1.8/bundled/html4+html5/jquery.history.js"></script>
+
+  <script src="https://code.jquery.com/jquery-2.2.0.min.js" type="text/javascript"></script>
+  <script src="../assets/slick/slick.js" type="text/javascript" charset="utf-8"></script>
+  <script type="text/javascript">
+    $(document).on('ready', function() {
+      $(".lazy").slick({
+        lazyLoad: 'ondemand', // ondemand progressive anticipated
+        infinite: false
+      });
+	});
+	</script>
+{{end}}
+{{define "foot"}}{{end}}
