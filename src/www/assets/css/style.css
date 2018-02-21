@@ -850,3 +850,7 @@ body {
   border: 1px solid #c8d7e1;
   outline: 0;
 }
+/** Added */
+.slideTitle {
+  font-weight: bold;
+}

@@ -1,67 +1,113 @@
 {{define "title"}}GGen &#8212; Generator{{end}}
 {{define "head"}}
-<link rel="stylesheet" type="text/css" href="../assets/slick/slick.css">
-  <link rel="stylesheet" type="text/css" href="../assets/slick/slick-theme.css">
-  <style type="text/css">
-    .slider {
-        margin: 100px auto;
-    }
-
-    .slick-slide {
-      margin: 0px 20px;
-    }
-
-    .slick-slide img {
-      width: 100%;
-    }
-
-    .slick-prev:before,
-    .slick-next:before {
-      color: black;
-    }
-
-
-    .slick-slide {
-      transition: all ease-in-out .3s;
-      opacity: .2;
-    }
-    
-    .slick-active {
-      opacity: .5;
-    }
-
-    .slick-current {
-      opacity: 1;
-	}
-	</style>
+<link rel="stylesheet" type="text/css" href="../assets/css/slick.css">
+<link rel="stylesheet" type="text/css" href="../assets/css/slick-theme.css">
+<script src="../assets/js/slick.js" type="text/javascript" charset="utf-8"></script>
 {{end}}
 {{define "content"}}
-<section class="lazy slider" data-sizes="50vw">
-    <div>
-		<p>test1</p>
-	</div>
-    <div>
-		<p>test2</p>
-    </div>
-    <div>
-		<p>test3</p>
-    </div>
-    <div>
-		<p>test4</p>
-    </div>
-  </section>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/history.js/1.8/bundled/html4+html5/jquery.history.js"></script>
-
-  <script src="https://code.jquery.com/jquery-2.2.0.min.js" type="text/javascript"></script>
-  <script src="../assets/slick/slick.js" type="text/javascript" charset="utf-8"></script>
-  <script type="text/javascript">
-    $(document).on('ready', function() {
-      $(".lazy").slick({
+<form action="/generator/generate" enctype="multipart/form-data" method="POST">
+    <section class="generatorForm">
+        <div>
+            <fieldset>
+                <legend class="slideTitle">Upload image</legend>
+            <span>
+                <button id="forwardToGeneralSettings" type="button">Next</button>
+            </span>
+            </fieldset>
+        </div>
+        <div>
+            <fieldset>
+                    <legend class="slideTitle">General settings</legend>
+                <button id="backToImageUpload" type="button">Back</button>
+                <button id="forwardToImageSettings" type="button">Next</button>
+            </fieldset>
+        </div>
+        <div>
+            <fieldset>
+                <legend class="slideTitle">Image settings</legend>
+                <button id="backToGeneralSettings" type="button">Back</button>
+                <button id="forwardToPrinterSettings" type="button">Next</button>
+            </fieldset>
+        </div>
+        <div>
+            <fieldset>
+                <legend class="slideTitle">Printer settings</legend>
+                <button id="backToImageSettings" type="button">Back</button>
+                <button id="forwardToLoadingScreen" type="button">Generate!</button>
+            </fieldset>
+        </div>
+        <div>
+            <p style="text-align:center;">Please wait...</p>
+        </div>
+        <div>
+            <fieldset>
+                <legend class="slideTitle">Preview</legend>
+                <button id="restartForm" type="button">Remake it</button>
+                <button id="makeAnotherModel" type="button">Another one</button>
+            </fieldset>
+        </div>
+    </section>
+</form>
+<script type="text/javascript">
+$(document).ready(function() {
+    $(".generatorForm").slick({
         lazyLoad: 'ondemand', // ondemand progressive anticipated
-        infinite: false
-      });
-	});
-	</script>
+        infinite: false,
+        draggable: false,
+        swipe: false,
+        swipeToSlide: false,
+        touchMove: false,
+        draggable: false,
+    });
+    $('#forwardToGeneralSettings').click(function() {
+        $(".generatorForm").slick("slickGoTo", 1);
+    });
+    $('#forwardToImageSettings').click(function() {
+        $(".generatorForm").slick("slickGoTo", 2);
+    });
+    $('#forwardToPrinterSettings').click(function() {
+        $(".generatorForm").slick("slickGoTo", 3);
+    });
+    $('#forwardToLoadingScreen').click(function() {
+        // Open transmission with server
+        // Send data to the server
+        // Receive informations about elaboration and modify loading bar accordingly
+        // When finished, receive final G-Code location in server (which will be delete after user exited webpage) so that
+        // the viewer can load it
+        // Close transmission
+        // Go to next slide
+        // Reset data for loading slide
+        $(".generatorForm").slick("slickGoTo", 4);
+        // Debug only
+        setTimeout(
+            function() 
+            {
+                $(".generatorForm").slick("slickGoTo", 5);
+            }, 1500);
+        
+    });
+    $('#forwardToPreview').click(function() {
+        $(".generatorForm").slick("slickGoTo", 5);
+    });
+    $('#restartForm').click(function() {
+        $(".generatorForm").slick("slickGoTo", 1);
+    });
+    $('#makeAnotherModel').click(function() {
+        // Cancel all data
+        $(".generatorForm").slick("slickGoTo", 0);
+    });
+    $('#backToImageUpload').click(function() {
+        $(".generatorForm").slick("slickGoTo", 0);
+    });
+    $('#backToGeneralSettings').click(function() {
+        $(".generatorForm").slick("slickGoTo", 1);
+    });
+    $('#backToImageSettings').click(function() {
+        $(".generatorForm").slick("slickGoTo", 2);
+    });
+    $('#backToPrinterSettings').click(function() {
+        $(".generatorForm").slick("slickGoTo", 3);
+    });
+});
+</script>
 {{end}}
-{{define "foot"}}{{end}}
