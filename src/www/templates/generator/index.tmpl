@@ -69,6 +69,12 @@
         $('#backToPrinterSettings').click(function() {
             $(".generatorForm").slick("slickGoTo", 3);
         });
+
+        var canvas = new fabric.Canvas('c');
+
+        fabric.Image.fromURL("../assets/test.jpg", function(oImg) {
+            canvas.add(oImg)
+        })
     });
 
     Dropzone.options.imageUpload = {
@@ -79,19 +85,8 @@
             // codice...
         }
     };
-
-    // reference canvas element (with id="c")
-    var canvas = document.getElementById('c');
-
-    fabric.Image.fromURL('uploads/test.jpg', function(img) {
-        // add filter
-        img.filters.push(new fabric.Image.filters.Grayscale());
-
-        // apply filters and re-render canvas when done
-        img.applyFilters();
-        // add image onto canvas (it also re-render the canvas)
-        canvas.add(img);
-    });
+    
+    
 </script>
 
 {{end}}
@@ -100,12 +95,15 @@
         <div>
             <fieldset>
                 <legend class="slideTitle">Upload image</legend>
-                <canvas id="c"></canvas>
+                <canvas id="c" width="400" height="400"></canvas>
+                <button id="rect">Rect</button>
+                <button id="circ">Circ</button>
+                <button id="save">Save</button>
+                <input type="text" id="text" />
+                <p class="save"></p>
                 <!-- Drag & drop image -->
                 <div id="imageUploadContainer">
                     <form action="generator/imageUpload" id="imageUpload" class="dropzone" enctype="multipart/form-data" method="POST"> </form>
-                </div>
-                <div id="controlForm"></div>
                 </div>
                 <div>
                     <button id="forwardToGeneralSettings" type="button">Next</button>
