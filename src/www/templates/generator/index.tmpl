@@ -10,6 +10,9 @@
 <script src="../assets/js/fabric.min.js"></script>
 
 <script type="text/javascript">
+    var imageWidth = 550;
+    var imagePath = "";
+
     $(document).ready(function() {
         $(".generatorForm").slick({
             lazyLoad: 'ondemand', // ondemand progressive anticipated
@@ -71,18 +74,31 @@
         });
 
         var canvas = new fabric.Canvas('c');
+        canvas.hoverCursor = "default";
+        fabric.Image.fromURL("../assets/test2.png", function(oImg) {
+            var scale = imageWidth / oImg.width;
 
-        fabric.Image.fromURL("../assets/test.jpg", function(oImg) {
-            canvas.add(oImg)
+            oImg.set({
+                scaleX: scale,
+                scaleY: scale,
+                hasControls: false,
+                lockMovementX: true,
+                lockMovementY: true,
+            });
+
+            canvas.setWidth(imageWidth);
+            canvas.setHeight(oImg.height * scale);
+            canvas.add(oImg);
         })
+
     });
 
     Dropzone.options.imageUpload = {
         paramName: "image", // The name that will be used to transfer the file
         maxFilesize: 5, // MB
-        maxFiles: 1,
+        previewsContainer: false,
         success: function(file, response){
-            // codice...
+            imagePath = response;
         }
     };
     
@@ -95,12 +111,8 @@
         <div>
             <fieldset>
                 <legend class="slideTitle">Upload image</legend>
-                <canvas id="c" width="400" height="400"></canvas>
-                <button id="rect">Rect</button>
-                <button id="circ">Circ</button>
-                <button id="save">Save</button>
-                <input type="text" id="text" />
-                <p class="save"></p>
+                <canvas id="c" style="border: 1px solid black"></canvas>
+
                 <!-- Drag & drop image -->
                 <div id="imageUploadContainer">
                     <form action="generator/imageUpload" id="imageUpload" class="dropzone" enctype="multipart/form-data" method="POST"> </form>

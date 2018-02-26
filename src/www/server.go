@@ -1,17 +1,28 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
+	"ggen/utils/config"
+	"ggen/utils/consts"
 	"html/template"
 	"io"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 
+	"github.com/gorilla/context"
+	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 )
 
 var (
 	templates *template.Template
+	store     = sessions.NewCookieStore([]byte(config.CookieStoreKey))
 )
 
 func main() {
@@ -23,7 +34,8 @@ func main() {
 	router.GET("/generator", GeneratorHandler)
 	router.POST("/generator/imageUpload", ImageUploadHandler)
 
-	http.ListenAndServe(":8080", router)
+	http.ListenAndServe(":80", context.ClearHandler(router))
+
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -36,16 +48,25 @@ func IndexHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 }
 
 func GeneratorHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// Loads and parses the template file for this handler
 	templates = template.Must(template.ParseFiles("templates/generator/index.tmpl", "templates/base.tmpl"))
 	err := templates.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	// Get or create new session having name consts.SessionName
+	session, err := store.Get(r, consts.SessionName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Save it before we write to the response/return from the handler.
+	session.Save(r, w)
 }
 
 func ImageUploadHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	fmt.Println("method:", r.Method)
 	if r.Method == "POST" {
 		r.ParseMultipartForm(32 << 20)
 		file, handler, err := r.FormFile("image")
@@ -54,13 +75,61 @@ func ImageUploadHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 			return
 		}
 		defer file.Close()
-		fmt.Fprintf(w, "%v", handler.Header)
-		f, err := os.OpenFile("./uploads/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+
+		// If user didn't upload any image before now, generate new random filename and put it in the session store
+		session, err := store.Get(r, consts.SessionName)
+		if session.Values[consts.SessionImageFilename] == nil {
+			tempImageFilename := TempFileName() + filepath.Ext(handler.Filename)
+			session.Values[consts.SessionImageFilename] = tempImageFilename
+			sessions.Save(r, w)
+
+		} else if !strings.EqualFold(filepath.Ext(session.Values[consts.SessionImageFilename].(string)), filepath.Ext(handler.Filename)) {
+			// Checks if extension of the uploaded file is equals to the extension of the filename in the session store.
+			// If filename is NOT equals, rewrite filename in session store and deletes old file from memory
+			err = os.Remove(filepath.Join("./uploads/", session.Values[consts.SessionImageFilename].(string)))
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			tempImageFilename := TempFileName() + filepath.Ext(handler.Filename)
+			session.Values[consts.SessionImageFilename] = tempImageFilename
+			sessions.Save(r, w)
+		}
+		// Open/Create temp file for image using name stored in the session store
+		f, err := os.OpenFile(filepath.Join("./uploads/", session.Values[consts.SessionImageFilename].(string)), os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		defer f.Close()
-		io.Copy(f, file)
+		_, err = io.Copy(f, file)
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		w.Header().Set(consts.HttpContentType, consts.HttpMimeTextPlain)
+		w.Write([]byte(session.Values[consts.SessionImageFilename].(string)))
 	}
+
+}
+
+// TempFileName generates a temporary filename for use in testing or whatever
+func TempFileName() string {
+	// Check if file exists in folder... otherwise generate another tempfilename
+	files, err := ioutil.ReadDir("./uploads/")
+	if err != nil {
+		log.Fatal(err)
+	}
+again:
+	randBytes := make([]byte, 16)
+	rand.Read(randBytes)
+
+	temp := hex.EncodeToString(randBytes)
+	for _, f := range files {
+		if strings.EqualFold(f.Name(), temp) {
+			goto again
+		}
+	}
+	return temp
 }
