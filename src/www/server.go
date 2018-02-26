@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/context"
@@ -32,6 +34,7 @@ func main() {
 	/** ROUTES **/
 	router.GET("/", IndexHandler)
 	router.GET("/generator", GeneratorHandler)
+	router.GET("/uploads/:filename", UploadGetterHandler)
 	router.POST("/generator/imageUpload", ImageUploadHandler)
 
 	http.ListenAndServe(":80", context.ClearHandler(router))
@@ -64,6 +67,31 @@ func GeneratorHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 
 	// Save it before we write to the response/return from the handler.
 	session.Save(r, w)
+}
+
+func UploadGetterHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	if r.Method == "GET" {
+		session, err := store.Get(r, consts.SessionName)
+
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(consts.InternalServerError)
+			return
+		}
+
+		if strings.EqualFold(ps.ByName("filename"), session.Values[consts.SessionImageFilename].(string)) {
+			extension := filepath.Ext(ps.ByName("filename"))
+			if strings.EqualFold(extension, "jpg") {
+				extension = "jpeg"
+			}
+			w.Header().Set(consts.HttpContentType, "image/"+extension)
+
+			buff := bytes.NewBuffer(ioutil.ReadFile(filepath.Join("./uploads/", session.Values[consts.SessionImageFilename].(string))))
+
+		} else {
+			w.WriteHeader(consts.AccessForbidden)
+		}
+	}
 }
 
 func ImageUploadHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -109,6 +137,7 @@ func ImageUploadHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 			return
 		}
 		w.Header().Set(consts.HttpContentType, consts.HttpMimeTextPlain)
+		w.Header().Set(consts.HttpContentLength, strconv.Itoa(len(session.Values[consts.SessionImageFilename].(string))))
 		w.Write([]byte(session.Values[consts.SessionImageFilename].(string)))
 	}
 

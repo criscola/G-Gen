@@ -14,5 +14,17 @@ const (
 const (
 	HttpPost          = "POST"
 	HttpContentType   = "Content-Type"
+	HttpContentLength = "Content-Length"
 	HttpMimeTextPlain = "text/plain"
+	HttpMimeImageJpeg = "image/jpeg"
+	HttpMimeImagePng  = "image/png"
+	HttpMimeImageGif  = "image/gif"
+)
+
+/**
+ * HTTP Status Code
+ */
+const (
+	AccessForbidden     = 403
+	InternalServerError = 500
 )

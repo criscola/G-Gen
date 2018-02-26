@@ -73,24 +73,6 @@
             $(".generatorForm").slick("slickGoTo", 3);
         });
 
-        var canvas = new fabric.Canvas('c');
-        canvas.hoverCursor = "default";
-        fabric.Image.fromURL("../assets/test2.png", function(oImg) {
-            var scale = imageWidth / oImg.width;
-
-            oImg.set({
-                scaleX: scale,
-                scaleY: scale,
-                hasControls: false,
-                lockMovementX: true,
-                lockMovementY: true,
-            });
-
-            canvas.setWidth(imageWidth);
-            canvas.setHeight(oImg.height * scale);
-            canvas.add(oImg);
-        })
-
     });
 
     Dropzone.options.imageUpload = {
@@ -99,6 +81,30 @@
         previewsContainer: false,
         success: function(file, response){
             imagePath = response;
+            // Create canvas element
+            var canvasContainer = document.createElement("canvas");
+            // Append new canvas to the canvasContainer div
+            $("#canvasContainer").append(canvasContainer);
+            // Create new fabric.Canvas referring to the new canvas element
+            var canvas = new fabric.Canvas(canvasContainer, {width: 1, height: 1});
+            
+            canvas.hoverCursor = "default";
+            fabric.Image.fromURL("../uploads/" + imagePath, function(oImg) {
+                var scale = imageWidth / oImg.width;
+
+                oImg.set({
+                    scaleX: scale,
+                    scaleY: scale,
+                    hasControls: false,
+                    lockMovementX: true,
+                    lockMovementY: true,
+                });
+
+                canvas.setWidth(imageWidth);
+                canvas.setHeight(oImg.height * scale);
+                canvas.add(oImg);
+            })
+            
         }
     };
     
@@ -111,8 +117,8 @@
         <div>
             <fieldset>
                 <legend class="slideTitle">Upload image</legend>
-                <canvas id="c" style="border: 1px solid black"></canvas>
-
+                <!-- <canvas id="c" style="border: 1px solid black"></canvas> -->
+                <div id="canvasContainer"></div>
                 <!-- Drag & drop image -->
                 <div id="imageUploadContainer">
                     <form action="generator/imageUpload" id="imageUpload" class="dropzone" enctype="multipart/form-data" method="POST"> </form>
