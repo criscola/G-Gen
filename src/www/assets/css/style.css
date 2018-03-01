@@ -855,11 +855,26 @@ body {
 .slideTitle {
   font-weight: bold;
 }
+.slickContainer {
+  padding-top: 20px;
+}
+.slickControls {
+  margin-top: 20px;
+  margin-bottom: 10px;  
+}
+
+.settingsContainer {
+  margin-top: 20px;
+}
 
 /** Drag & drop file upload */
+#formTable {
+  margin-top:10px;
+}
 
 /** FabricJS */
-.canvas-container {
-  margin: auto;
+#canvasContainer {
+  text-align: center;
   margin-top: 20px;   
 }
+

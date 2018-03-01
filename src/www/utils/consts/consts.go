@@ -20,11 +20,3 @@ const (
 	HttpMimeImagePng  = "image/png"
 	HttpMimeImageGif  = "image/gif"
 )
-
-/**
- * HTTP Status Code
- */
-const (
-	AccessForbidden     = 403
-	InternalServerError = 500
-)

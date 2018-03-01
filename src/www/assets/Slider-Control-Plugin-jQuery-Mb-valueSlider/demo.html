@@ -1,0 +1,94 @@
+<!doctype html>
+
+<!--::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  jquery.mb.components
+  file: demo.html
+  last modified: 18/11/17 20.15
+  Version:  {{ version }}
+  Build:  {{ buildnum }}
+
+  Open Lab s.r.l., Florence - Italy
+  email: matteo@open-lab.com
+  site: 	http://pupunzi.com
+  	http://open-lab.com
+  blog: 	http://pupunzi.open-lab.com
+
+  Licences: MIT, GPL
+  http://www.opensource.org/licenses/mit-license.php
+  http://www.gnu.org/licenses/gpl.html
+
+  Copyright (c) 2001-2017. Matteo Bicocchi (Pupunzi)
+  :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::-->
+
+<html>
+<head>
+<link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
+    <style type="text/css">
+        
+
+
+    </style>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>jQuery mb.valueSlider Plugin Examples</title>
+    <link href="css/mb.slider.css" media="all" rel="stylesheet" type="text/css">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" ></script>
+    <script type="text/javascript" src="inc/formatDate.js"></script>
+    <script type="text/javascript" src="inc/jquery.mb.slider.js"></script>
+
+</head>
+<body>
+
+</div>
+<div class="wrapper">
+    <br>Decimal:
+    <div id="decimal" style="">
+        <div id="s10" class="mb_slider" data-property="{minVal:-10,rangeColor:'green', maxVal:10, grid:1, startAt:-3}" style="display:block;"></div>
+    </div>
+</div>    
+
+<script type="text/javascript">
+
+
+
+    $("#decimal .mb_slider").mbSlider({
+        formatValue: function(val){
+            var formatVal = val/10;
+            return formatVal;
+        },
+        onSlide:function(o){}
+    });
+
+   
+
+    /**
+     *  COLOR PICKER EXAMPLE
+     */
+    //Get hex from rgb colour
+    function rgb2hex(rgb) {
+        var hex= function(x) {
+            var hexDigits = new Array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F");
+            return isNaN(x) ? "00" : hexDigits[(x - x % 16) / 16] + hexDigits[x % 16];
+        };
+        return "#" + hex(rgb[0]) + hex(rgb[1]) + hex(rgb[2]);
+    }
+
+    //Get rgb from hex colour
+    function hex2rgb(v){
+        var val=(v.charAt(0)=="#") ? v.substring(1,7):"ffffff";
+        var R=parseInt(val.substring(0,2),16);
+        var G=parseInt(val.substring(2,4),16);
+        var B=parseInt(val.substring(4,6),16);
+        return [R,G,B];
+    }
+
+    //Change colour
+    function changeColor(R,G,B){
+        var HEX=rgb2hex([R,G,B]);
+        $("#colorChange").css("backgroundColor", HEX );
+        $("#colorValueHex").html("<b>"+HEX+"</b>");
+        $("#colorValueRGB").html("<b>rgb ("+hex2rgb(HEX)[0]+", "+hex2rgb(HEX)[1]+", "+hex2rgb(HEX)[2]+")</b>");
+    }
+
+</script>
+</body>
+</html>
