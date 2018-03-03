@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
 	"ggen/utils/config"
 	"ggen/utils/consts"
 	"html/template"
@@ -34,9 +33,9 @@ func main() {
 	router.GET("/", IndexHandler)
 	router.GET("/generator", GeneratorHandler)
 	router.GET("/uploads/:filename", ImageGetHandler)
-	router.GET("generator/queue/:queueId", QueueHandler)
+	router.GET("/generator/queue/:queueId", QueueHandler)
 	router.POST("/generator/imageUpload", ImagePostHandler)
-	router.POST("generator/generate", StartGeneratorJobHandler)
+	router.POST("/generator/generate", StartGeneratorJobHandler)
 	router.DELETE("/generator/imageRemove", ImageRemoveHandler)
 
 	http.ListenAndServe(":80", context.ClearHandler(router))
@@ -83,7 +82,6 @@ func ImageGetHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 
 		if strings.EqualFold(ps.ByName("filename"), session.Values[consts.SessionImageFilename].(string)) {
 			extension := strings.TrimPrefix(filepath.Ext(ps.ByName("filename")), ".")
-			fmt.Println("ext: " + extension)
 			if strings.EqualFold(extension, "jpg") {
 				extension = "jpeg"
 			}
@@ -115,7 +113,6 @@ func QueueHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 
 func ImagePostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if r.Method == http.MethodPost {
-		fmt.Println("ok1")
 		r.ParseMultipartForm(32 << 20)
 		file, handler, err := r.FormFile("image")
 		if err != nil {
@@ -190,7 +187,6 @@ func ImageRemoveHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 			panic(err)
 
 		}
-		fmt.Printf(session.Values[consts.SessionImageFilename].(string))
 		err = os.Remove(filepath.Join("./uploads/", session.Values[consts.SessionImageFilename].(string)))
 
 		if err != nil {
