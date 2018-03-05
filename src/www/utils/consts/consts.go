@@ -4,8 +4,9 @@ package consts
  * Session (session name, keys...)
  */
 const (
-	SessionImageFilename = "SessionImageFilename"
 	SessionName          = "UserSession"
+	SessionImageFilename = "SessionImageFilename"
+	SessionGeneratorJob  = "SessionGeneratorJob"
 )
 
 /**
@@ -19,4 +20,14 @@ const (
 	HttpMimeImageJpeg = "image/jpeg"
 	HttpMimeImagePng  = "image/png"
 	HttpMimeImageGif  = "image/gif"
+)
+
+/**
+ * Form values keys
+ */
+
+const (
+	FormImage       = "image"
+	FormScaleFactor = "scaleFactor"
+	FormTravelSpeed = "travelSpeed"
 )

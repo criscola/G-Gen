@@ -34,29 +34,36 @@
             $(".generatorForm").slick("slickGoTo", 3);
         });
         $('#forwardToLoadingScreen').click(function() {
+            $(".generatorForm").slick("slickGoTo", 4);
+            
+            // Send parameters to server
+            let formData = {
+                "scaleFactor" : $("input[name=scaleFactor]").val(),
+                "travelSpeed" : $("input[name=travelSpeed]").val(),
+            }
             $.ajax({
                 url: "/generator/generate",
                 type: "POST",
+                data: formData,
                 success: function(result){
-
+                    var queueId = result;
                 },
             })
-            // Open transmission with server
-            // Send data to the server
-            // Receive informations about elaboration and modify loading bar accordingly
-            // When finished, receive final G-Code location in server (which will be delete after user exited webpage) so that
-            // the viewer can load it
-            // Close transmission
-            // Go to next slide
-            // Reset data for loading slide
-            $(".generatorForm").slick("slickGoTo", 4);
-            // Debug only
-            setTimeout(
-                function() 
-                {
-                    $(".generatorForm").slick("slickGoTo", 5);
-                }, 1500);
-            
+
+            let percentage = 0;
+            loadingBarUpdater = setInterval(function() { 
+                $.ajax({
+                    url: "/generator/queue/" + queueId,
+                    type: "GET",
+                    success: function(result){
+                        percentage = result;
+                    },
+                })
+                // Modify loading bar accordingly
+                if (percentage >= 100) {
+                    clearInterval(loadingBarUpdater);
+                }
+            }, 1000);
         });
         $('#forwardToPreview').click(function() {
             $(".generatorForm").slick("slickGoTo", 5);
@@ -99,7 +106,7 @@
             onSlide: function(o){
                 if (canvas != null) {
                     if (canvas.getObjects()[0] != null) { 
-                        var val = $(o).mbgetVal();
+                        let val = $(o).mbgetVal();
                         img = canvas.getObjects()[0];
                         
                         if (img.filters[0] != null) {
@@ -127,7 +134,7 @@
             },
             onSlide:function(o){
                 if (canvas != null && canvas.getObjects()[0] != null) {
-                    var val = $(o).mbgetVal();
+                    let val = $(o).mbgetVal();
                     img = canvas.getObjects()[0];
                     
                     if (img.filters[1] != null) {
@@ -157,8 +164,8 @@
         previewsContainer: false,
         accept: function(file, done) {
             // Checks if file has an image extension. If not, decline upload
-            var re = /(?:\.([^.]+))?$/;
-            var ext = re.exec(file.name)[1];
+            let re = /(?:\.([^.]+))?$/;
+            let ext = re.exec(file.name)[1];
             ext = ext.toUpperCase();
             if (ext == "JPEG" || ext == "PNG" || ext == "BMP" ||  ext == "JPG") {
                 done();
@@ -170,7 +177,7 @@
         success: function(file, response) {
             imagePath = response;
             $("#canvasContainer").show();
-            var canvasContainer;
+            let canvasContainer;
 
             // If canvas wasn't create before
             if (canvas == null) {
@@ -184,7 +191,7 @@
             }
             // Add image to canvas
             fabric.Image.fromURL("../uploads/" + imagePath + "?new=", function(oImg) {
-                var scale = imageWidth / oImg.width;
+                let scale = imageWidth / oImg.width;
                 
                 oImg.set({
                     scaleX: scale,
@@ -228,7 +235,7 @@
                             <label style="font-weight: bold;">Brightness</label>
                         </td>
                         <td>
-                            <div id="brightnessSlider" class="mb_slider" data-property="{minVal:-1,rangeColor:'green', maxVal:1, startAt:0, grid:0.003921}" style="display:block;"></div>                                </div>
+                            <div id="brightnessSlider" class="mb_slider" data-property="{minVal:-1,rangeColor:'green', maxVal:1, startAt:0, grid:0.003921}" style="display:block;"></div>
                         </td>
                     </tr>
                     <tr>
@@ -236,7 +243,7 @@
                             <label style="font-weight: bold;">Contrast</label>
                         </td>
                         <td>
-                            <div id="contrastSlider" class="mb_slider" data-property="{minVal:-1,rangeColor:'green', maxVal:1, startAt:0, grid:0.003921}" style="display:block;"></div>                                </div>
+                            <div id="contrastSlider" class="mb_slider" data-property="{minVal:-1,rangeColor:'green', maxVal:1, startAt:0, grid:0.003921}" style="display:block;"></div>
                         </td>
                     </tr>
                 </table>
@@ -258,7 +265,7 @@
                                 <label style="font-weight: bold;">Scale factor</label>
                             </td>
                             <td>
-                                <input type="number" min="0" max="2" step="0.5">
+                                <input name="scaleFactor" type="number" min="0" max="2" step="0.5">
                             </td>
                         </tr>
                         <tr>
@@ -266,7 +273,7 @@
                                 <label style="font-weight: bold;">Travel speed [mm/s]</label>
                             </td>
                             <td>
-                                <input type="number" min="0" max="2000" step="1">
+                                <input name="travelSpeed" type="number" min="0" max="2000" step="1">
                             </td>
                         </tr>
                     </table>
