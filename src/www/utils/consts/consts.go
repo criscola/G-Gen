@@ -25,9 +25,17 @@ const (
 /**
  * Form values keys
  */
-
 const (
 	FormImage       = "image"
 	FormScaleFactor = "scaleFactor"
 	FormTravelSpeed = "travelSpeed"
+)
+
+/**
+ * Http requests parameters
+ */
+const (
+	RequestFilename = "filename"
+	RequestQueueId  = "queueId"
+	RequestOutputId = "outputId"
 )

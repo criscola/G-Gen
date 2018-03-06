@@ -1,5 +1,7 @@
 package main
 
+import "time"
+
 type GeneratorJob struct {
 	StartTime  int64
 	FinishTime int64
@@ -12,5 +14,6 @@ type GeneratorParams struct {
 }
 
 func StartGeneratorJob(job *GeneratorJob, params *GeneratorParams) {
-	job.Completion = 60
+	job.Completion = 100
+	job.FinishTime = time.Now().Unix()
 }

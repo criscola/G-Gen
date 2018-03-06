@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rand"
+	"encoding/gob"
 	"encoding/hex"
 	"ggen/utils/config"
 	"ggen/utils/consts"
@@ -32,9 +33,9 @@ func main() {
 	/** ROUTES **/
 	router.GET("/", IndexHandler)
 	router.GET("/generator", GeneratorHandler)
-	router.GET("/uploads/:filename", ImageGetHandler)
-	router.GET("/generator/queue/:queueId", QueueHandler)
-	router.GET("/generator/output/:outputId", OutputHandler)
+	router.GET("/uploads/:"+consts.RequestFilename, ImageGetHandler)
+	router.GET("/generator/queue/:"+consts.RequestQueueId, QueueHandler)
+	router.GET("/generator/output/:"+consts.RequestOutputId, OutputHandler)
 	router.POST("/generator/imageUpload", ImagePostHandler)
 	router.POST("/generator/generate", StartGeneratorJobHandler)
 	router.DELETE("/generator/imageRemove", ImageRemoveHandler)
@@ -76,8 +77,8 @@ func ImageGetHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		if strings.EqualFold(ps.ByName("filename"), session.Values[consts.SessionImageFilename].(string)) {
-			extension := strings.TrimPrefix(filepath.Ext(ps.ByName("filename")), ".")
+		if strings.EqualFold(ps.ByName(consts.RequestFilename), session.Values[consts.SessionImageFilename].(string)) {
+			extension := strings.TrimPrefix(filepath.Ext(ps.ByName(consts.RequestFilename)), ".")
 			if strings.EqualFold(extension, "jpg") {
 				extension = "jpeg"
 			}
@@ -98,13 +99,15 @@ func QueueHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 		session, err := store.Get(r, consts.SessionName)
 		checkError(err)
 
-		id := ps.ByName("queueId")
-		jobs := session.Values[consts.SessionGeneratorJob].(map[string]*GeneratorJob)
+		id := ps.ByName(consts.RequestQueueId)
 
+		jobs := session.Values[consts.SessionGeneratorJob].(map[string]*GeneratorJob)
 		// check if there is the parameter and session
 		if id != "" && jobs != nil {
+
 			// if there is a job with key as queueId
 			selectedJob := jobs[id]
+
 			if selectedJob != nil {
 				// Return % of completion
 				temp := strconv.Itoa(selectedJob.Completion)
@@ -112,6 +115,8 @@ func QueueHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 				w.Header().Set(consts.HttpContentType, consts.HttpMimeTextPlain)
 				w.Header().Set(consts.HttpContentLength, strconv.Itoa(len(temp)))
 				w.Write([]byte(temp))
+			} else {
+				w.WriteHeader(http.StatusForbidden)
 			}
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
@@ -178,7 +183,6 @@ func StartGeneratorJobHandler(w http.ResponseWriter, r *http.Request, ps httprou
 		// Send back 202 (accepted) status code
 		// Get session
 		session, err := store.Get(r, consts.SessionName)
-		checkError(err)
 
 		// Generate id for job
 		id := GetRandomString()
@@ -191,9 +195,8 @@ func StartGeneratorJobHandler(w http.ResponseWriter, r *http.Request, ps httprou
 		} else {
 			jobs = make(map[string]*GeneratorJob)
 		}
-		session.Save(r, w)
 
-		currentJob := GeneratorJob{time.Now().Unix(), 0}
+		currentJob := GeneratorJob{time.Now().Unix(), 0, 0}
 		jobs[id] = &currentJob
 		session.Values[consts.SessionGeneratorJob] = jobs
 
@@ -207,7 +210,10 @@ func StartGeneratorJobHandler(w http.ResponseWriter, r *http.Request, ps httprou
 			TravelSpeed: travelSpeed,
 		}
 
-		go StartGeneratorJob(&generationParams)
+		go StartGeneratorJob(jobs[id], &generationParams)
+
+		session.Save(r, w)
+
 		// Write in response body the id
 		w.Header().Set(consts.HttpContentType, consts.HttpMimeTextPlain)
 		w.Header().Set(consts.HttpContentLength, strconv.Itoa(len(id)))
@@ -257,4 +263,8 @@ func checkError(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func init() {
+	gob.Register(map[string]*GeneratorJob{})
 }

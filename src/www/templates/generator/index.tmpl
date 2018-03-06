@@ -1,22 +1,25 @@
-{{define "title"}}GGen &#8212; Generator{{end}}
-{{define "head"}}
+{{define "title"}}GGen &#8212; Generator{{end}} {{define "head"}}
 <link rel="stylesheet" type="text/css" href="../assets/css/slick.css">
 <link rel="stylesheet" type="text/css" href="../assets/css/slick-theme.css">
 <link rel="stylesheet" type="text/css" href="../assets/css/dropzone.css">
 <link rel="stylesheet" type="text/css" href="../assets/css/mb.slider.css">
+<link rel="stylesheet" type="text/css" href="../assets/css/bootstrap-progressbar.css">
 
-<script type="text/javascript" src="../assets/js/slick.js" ></script>
+<script type="text/javascript" src="../assets/js/slick.js"></script>
 <script type="text/javascript" src="../assets/js/dropzone.js"></script>
 <script type="text/javascript" src="../assets/js/js.cookie.js"></script>
 <script type="text/javascript" src="../assets/js/fabric.min.js"></script>
 <script type="text/javascript" src="../assets/js/jquery.mb.slider.js"></script>
+<script type="text/javascript" src="../assets/js/bootstrap-progressbar.js"></script>
 
 <script type="text/javascript">
     var imageWidth = 550;
     var imagePath = "";
     var canvas;
-    
-    $(document).ready(function() {
+    var queueId;
+
+    $(document).ready(function () {
+        $(".progress .progress-bar").attr("data-transitiongoal", "10");
         $("#canvasContainer").hide();
         $(".generatorForm").slick({
             lazyLoad: 'ondemand', // ondemand progressive anticipated
@@ -27,66 +30,77 @@
             touchMove: false,
             draggable: false,
         });
-        $('#forwardToGeneralSettings').click(function() {
+        $('#forwardToGeneralSettings').click(function () {
             $(".generatorForm").slick("slickGoTo", 1);
         });
-        $('#forwardToPrinterSettings').click(function() {
+        $('#forwardToPrinterSettings').click(function () {
             $(".generatorForm").slick("slickGoTo", 3);
         });
-        $('#forwardToLoadingScreen').click(function() {
-            $(".generatorForm").slick("slickGoTo", 4);
-            
-            // Send parameters to server
+        $('#forwardToLoadingScreen').click(function () {
+            $('.progress .progress-bar').progressbar({ display_text: 'center' });
+            $(".generatorForm").slick("slickGoTo", 2);
+
+            // Get parameters from inputs
             let formData = {
-                "scaleFactor" : $("input[name=scaleFactor]").val(),
-                "travelSpeed" : $("input[name=travelSpeed]").val(),
+                "scaleFactor": $("input[name=scaleFactor]").val(),
+                "travelSpeed": $("input[name=travelSpeed]").val(),
             }
+            // Send parameters to server
             $.ajax({
                 url: "/generator/generate",
                 type: "POST",
                 data: formData,
-                success: function(result){
-                    var queueId = result;
+                success: function (result) {
+                    if (result != "") {
+                        let percentage = 0;
+                        // Get queueId from server
+                        queueId = result;
+                        // Ask for percentage from server
+                        loadingBarUpdater = setInterval(function () {
+                            $.ajax({
+                                url: "/generator/queue/" + queueId,
+                                type: "GET",
+                                success: function (result) {
+                                    // Get percentage from server and update loading bar
+                                    if (percentage != result) {
+                                        percentage = result;
+                                        $(".progress .progress-bar").attr("data-transitiongoal", percentage);
+                                        $(".progress .progress-bar").progressbar();
+                                    }
+                                },
+                            })
+                            // Modify loading bar accordingly
+                            if (percentage >= 100) {
+                                clearInterval(loadingBarUpdater);
+                            }
+                        }, 1500);
+                    }
                 },
             })
 
-            let percentage = 0;
-            loadingBarUpdater = setInterval(function() { 
-                $.ajax({
-                    url: "/generator/queue/" + queueId,
-                    type: "GET",
-                    success: function(result){
-                        percentage = result;
-                    },
-                })
-                // Modify loading bar accordingly
-                if (percentage >= 100) {
-                    clearInterval(loadingBarUpdater);
-                }
-            }, 1000);
         });
-        $('#forwardToPreview').click(function() {
+        $('#forwardToPreview').click(function () {
             $(".generatorForm").slick("slickGoTo", 5);
         });
-        $('#restartForm').click(function() {
+        $('#restartForm').click(function () {
             $(".generatorForm").slick("slickGoTo", 1);
         });
-        $('#makeAnotherModel').click(function() {
+        $('#makeAnotherModel').click(function () {
             // Cancel all data
             $(".generatorForm").slick("slickGoTo", 0);
         });
-        $('#backToImageUpload').click(function() {
+        $('#backToImageUpload').click(function () {
             $(".generatorForm").slick("slickGoTo", 0);
         });
-        $('#backToPrinterSettings').click(function() {
+        $('#backToPrinterSettings').click(function () {
             $(".generatorForm").slick("slickGoTo", 3);
         });
-        
-        $('#removeImage').click(function() {
+
+        $('#removeImage').click(function () {
             $.ajax({
                 url: '/generator/imageRemove',
                 type: 'DELETE',
-                success: function(result) {
+                success: function (result) {
                     $('#removeImage').prop("disabled", true);
                     $("#forwardToGeneralSettings").prop("disabled", true);
                     $("#brightnessSlider").mbsetVal(0);
@@ -96,31 +110,31 @@
                     $("#imageUpload").show();
                 }
             });
-            
+
         });
 
         $("#brightnessSlider").mbSlider({
-            formatValue: function(val){
+            formatValue: function (val) {
                 return Number(val).toFixed(2);
             },
-            onSlide: function(o){
+            onSlide: function (o) {
                 if (canvas != null) {
-                    if (canvas.getObjects()[0] != null) { 
+                    if (canvas.getObjects()[0] != null) {
                         let val = $(o).mbgetVal();
                         img = canvas.getObjects()[0];
-                        
+
                         if (img.filters[0] != null) {
                             img.filters[0]["brightness"] = parseFloat(val);
                         } else {
-                            img.filters[0] = new fabric.Image.filters.Brightness({brightness: parseFloat(val)});
+                            img.filters[0] = new fabric.Image.filters.Brightness({ brightness: parseFloat(val) });
                         }
-                        
+
                         img.applyFilters();
                         canvas.renderAll();
                     }
                 }
             },
-            onStop: function(o){
+            onStop: function (o) {
                 // If user didn't upload an image, reset slider value to 0
                 if (canvas == null || canvas.getObjects()[0] == null) {
                     $("#brightnessSlider").mbsetVal(0);
@@ -129,25 +143,25 @@
         });
 
         $("#contrastSlider").mbSlider({
-            formatValue: function(val){
+            formatValue: function (val) {
                 return Number(val).toFixed(2);
             },
-            onSlide:function(o){
+            onSlide: function (o) {
                 if (canvas != null && canvas.getObjects()[0] != null) {
                     let val = $(o).mbgetVal();
                     img = canvas.getObjects()[0];
-                    
+
                     if (img.filters[1] != null) {
                         img.filters[1]["contrast"] = parseFloat(val);
                     } else {
-                        img.filters[1] = new fabric.Image.filters.Contrast({contrast: parseFloat(val)});
+                        img.filters[1] = new fabric.Image.filters.Contrast({ contrast: parseFloat(val) });
                     }
-                    
+
                     img.applyFilters();
                     canvas.renderAll();
                 }
             },
-            onStop: function(o){
+            onStop: function (o) {
                 // If user didn't upload an image, reset slider value to 0
                 if (canvas == null || canvas.getObjects()[0] == null) {
                     $("#contrastSlider").mbsetVal(0);
@@ -162,19 +176,19 @@
         paramName: "image", // The name that will be used to transfer the file
         maxFilesize: 5, // MB
         previewsContainer: false,
-        accept: function(file, done) {
+        accept: function (file, done) {
             // Checks if file has an image extension. If not, decline upload
             let re = /(?:\.([^.]+))?$/;
             let ext = re.exec(file.name)[1];
             ext = ext.toUpperCase();
-            if (ext == "JPEG" || ext == "PNG" || ext == "BMP" ||  ext == "JPG") {
+            if (ext == "JPEG" || ext == "PNG" || ext == "BMP" || ext == "JPG") {
                 done();
             } else {
                 alert("Accepted filetypes are JPEG, JPG, PNG, BMP.");
             }
         },
         // On image upload success
-        success: function(file, response) {
+        success: function (file, response) {
             imagePath = response;
             $("#canvasContainer").show();
             let canvasContainer;
@@ -186,13 +200,13 @@
                 // Append new canvas to the canvasContainer div
                 $("#canvasContainer").append(canvasContainer);
                 // Create new fabric.Canvas referring to the new canvas element
-                canvas = new fabric.StaticCanvas(canvasContainer, {width: 0, height: 0});
+                canvas = new fabric.StaticCanvas(canvasContainer, { width: 0, height: 0 });
                 canvas.hoverCursor = "default";
             }
             // Add image to canvas
-            fabric.Image.fromURL("../uploads/" + imagePath + "?new=", function(oImg) {
+            fabric.Image.fromURL("../uploads/" + imagePath + "?new=", function (oImg) {
                 let scale = imageWidth / oImg.width;
-                
+
                 oImg.set({
                     scaleX: scale,
                     scaleY: scale,
@@ -212,89 +226,90 @@
             $('#forwardToGeneralSettings').prop("disabled", false);
             $("#imageUpload").hide();
         }
-        
-    };
-</script>
 
-{{end}}
-{{define "content"}}
-    <section class="generatorForm">
-        <!-- Upload image slide -->
-        <div>
-            <fieldset class="slickContainer">
-                <legend class="slideTitle">Upload image</legend>
-                <div id="canvasContainer"></div>
-                <!-- Drag & drop image -->
-                <div id="imageUploadContainer">
-                    <form action="generator/imageUpload" id="imageUpload" class="dropzone" enctype="multipart/form-data" method="POST"> </form>
-                </div>
-                
-                <table id="formTable" style="padding-top:20px;">
+    };
+</script> {{end}} {{define "content"}}
+<section class="generatorForm">
+    <!-- Upload image slide -->
+    <div>
+        <fieldset class="slickContainer">
+            <legend class="slideTitle">Upload image</legend>
+            <div id="canvasContainer"></div>
+            <!-- Drag & drop image -->
+            <div id="imageUploadContainer">
+                <form action="generator/imageUpload" id="imageUpload" class="dropzone" enctype="multipart/form-data" method="POST"> </form>
+            </div>
+
+            <table id="formTable" style="padding-top:20px;">
+                <tr>
+                    <td style="padding-bottom: 11px;padding-right: 10px;">
+                        <label style="font-weight: bold;">Brightness</label>
+                    </td>
+                    <td>
+                        <div id="brightnessSlider" class="mb_slider" data-property="{minVal:-1,rangeColor:'green', maxVal:1, startAt:0, grid:0.003921}"
+                            style="display:block;"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding-bottom: 11px;padding-right: 10px;">
+                        <label style="font-weight: bold;">Contrast</label>
+                    </td>
+                    <td>
+                        <div id="contrastSlider" class="mb_slider" data-property="{minVal:-1,rangeColor:'green', maxVal:1, startAt:0, grid:0.003921}"
+                            style="display:block;"></div>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="slickControls">
+                <button id="removeImage" type="button" disabled>Remove image</button>
+                <button id="forwardToGeneralSettings" type="button" disabled>Next</button>
+            </div>
+        </fieldset>
+    </div>
+    <!-- Printer settings slide -->
+    <div>
+        <fieldset>
+            <legend class="slideTitle">Printer settings</legend>
+            <div class="slickControls">
+                <table id="formTable">
                     <tr>
-                        <td style="padding-bottom: 11px;padding-right: 10px;">
-                            <label style="font-weight: bold;">Brightness</label>
+                        <td style="padding-right:10px;">
+                            <label style="font-weight: bold;">Scale factor</label>
                         </td>
                         <td>
-                            <div id="brightnessSlider" class="mb_slider" data-property="{minVal:-1,rangeColor:'green', maxVal:1, startAt:0, grid:0.003921}" style="display:block;"></div>
+                            <input name="scaleFactor" type="number" min="0" max="2" step="0.5">
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding-bottom: 11px;padding-right: 10px;">
-                            <label style="font-weight: bold;">Contrast</label>
+                        <td style="padding-right:10px;">
+                            <label style="font-weight: bold;">Travel speed [mm/s]</label>
                         </td>
                         <td>
-                            <div id="contrastSlider" class="mb_slider" data-property="{minVal:-1,rangeColor:'green', maxVal:1, startAt:0, grid:0.003921}" style="display:block;"></div>
+                            <input name="travelSpeed" type="number" min="0" max="2000" step="1">
                         </td>
                     </tr>
                 </table>
-                
-                <div class="slickControls">
-                    <button id="removeImage" type="button" disabled>Remove image</button>
-                    <button id="forwardToGeneralSettings" type="button" disabled>Next</button>
+                <div class="settingsContainer">
+                    <button id="backToImageUpload" type="button">Back</button>
+                    <button id="forwardToLoadingScreen" type="button">Generate!</button>
                 </div>
-            </fieldset>
+            </div>
+        </fieldset>
+    </div>
+    <!-- Loading slide -->
+    <div>
+        <div class="progress progress-striped">
+            <div class="progress-bar" role="progressbar" data-transitiongoal="0"></div>
         </div>
-        <!-- Printer settings slide -->
-        <div>
-            <fieldset>
-                <legend class="slideTitle">Printer settings</legend>
-                <div class="slickControls">
-                    <table id="formTable">
-                        <tr>
-                            <td style="padding-right:10px;">
-                                <label style="font-weight: bold;">Scale factor</label>
-                            </td>
-                            <td>
-                                <input name="scaleFactor" type="number" min="0" max="2" step="0.5">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding-right:10px;">
-                                <label style="font-weight: bold;">Travel speed [mm/s]</label>
-                            </td>
-                            <td>
-                                <input name="travelSpeed" type="number" min="0" max="2000" step="1">
-                            </td>
-                        </tr>
-                    </table>
-                    <div class="settingsContainer">
-                        <button id="backToImageUpload" type="button">Back</button>
-                        <button id="forwardToLoadingScreen" type="button">Generate!</button>
-                    </div>
-                </div>  
-            </fieldset>
-        </div>
-        <!-- Loading slide -->
-        <div>
-            <p style="text-align:center;">Please wait...</p>
-        </div>
-        <!-- Preview slide -->
-        <div>
-            <fieldset>
-                <legend class="slideTitle">Preview</legend>
-                <button id="restartForm" type="button">Remake it</button>
-                <button id="makeAnotherModel" type="button">Another one</button>
-            </fieldset>
-        </div>
-    </section>
+    </div>
+    <!-- Preview slide -->
+    <div>
+        <fieldset>
+            <legend class="slideTitle">Preview</legend>
+            <button id="restartForm" type="button">Remake it</button>
+            <button id="makeAnotherModel" type="button">Another one</button>
+        </fieldset>
+    </div>
+</section>
 {{end}}
