@@ -19,11 +19,13 @@ import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
+	"fmt"
 )
 
 var (
-	templates *template.Template
-	store     = sessions.NewCookieStore([]byte(config.CookieStoreKey))
+	templates 		*template.Template
+	jobCompletion 	= make(chan *GeneratorJob)
+	store     		= sessions.NewCookieStore([]byte(config.CookieStoreKey))
 )
 
 func main() {
@@ -40,7 +42,7 @@ func main() {
 	router.POST("/generator/generate", StartGeneratorJobHandler)
 	router.DELETE("/generator/imageRemove", ImageRemoveHandler)
 
-	http.ListenAndServe(":80", context.ClearHandler(router))
+	http.ListenAndServe(":"+config.ServerPort, context.ClearHandler(router))
 
 }
 
@@ -102,16 +104,18 @@ func QueueHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 		id := ps.ByName(consts.RequestQueueId)
 
 		jobs := session.Values[consts.SessionGeneratorJob].(map[string]*GeneratorJob)
+
 		// check if there is the parameter and session
-		if id != "" && jobs != nil {
-
+		if id != "" && jobs[id] != nil && jobs[id].Completion != 100 {
 			// if there is a job with key as queueId
-			selectedJob := jobs[id]
-
-			if selectedJob != nil {
+			selectedJob := <- jobCompletion
+			fmt.Println("from QueueHand ", selectedJob.Completion)
+			jobs[id] = selectedJob
+			sessions.Save(r, w)
+			// If the user sending the request actually owns this resource, return the result
+			if selectedJob.Id == id {
 				// Return % of completion
 				temp := strconv.Itoa(selectedJob.Completion)
-
 				w.Header().Set(consts.HttpContentType, consts.HttpMimeTextPlain)
 				w.Header().Set(consts.HttpContentLength, strconv.Itoa(len(temp)))
 				w.Write([]byte(temp))
@@ -145,7 +149,7 @@ func ImagePostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 		checkError(err)
 
 		// This can happen if user has reloaded the web page but didn't trigger the proper ImageRemoveHandler, we still have its
-		// old session variable, so we can safetly know that we can delete his old image (also, if he is editing multiple files, they
+		// old session variable, so we can safely know that we can delete his old image (also, if he is editing multiple files, they
 		// will be already loaded in the corresponding web page, so we don't need it anymore)
 		if session.Values[consts.SessionImageFilename] != nil {
 			if _, err := os.Stat(filepath.Join("./uploads/", session.Values[consts.SessionImageFilename].(string))); !os.IsNotExist(err) {
@@ -186,6 +190,7 @@ func StartGeneratorJobHandler(w http.ResponseWriter, r *http.Request, ps httprou
 
 		// Generate id for job
 		id := GetRandomString()
+
 		// Generate id for job and add to session struct
 		var jobs map[string]*GeneratorJob
 
@@ -196,8 +201,8 @@ func StartGeneratorJobHandler(w http.ResponseWriter, r *http.Request, ps httprou
 			jobs = make(map[string]*GeneratorJob)
 		}
 
-		currentJob := GeneratorJob{time.Now().Unix(), 0, 0}
-		jobs[id] = &currentJob
+		jobs[id] = &GeneratorJob{id, time.Now().Unix(), 0, 0}
+
 		session.Values[consts.SessionGeneratorJob] = jobs
 
 		scaleFactor, err := strconv.ParseFloat(r.FormValue(consts.FormScaleFactor), 64)
@@ -210,8 +215,8 @@ func StartGeneratorJobHandler(w http.ResponseWriter, r *http.Request, ps httprou
 			TravelSpeed: travelSpeed,
 		}
 
-		go StartGeneratorJob(jobs[id], &generationParams)
-
+		go StartGeneratorJob(jobs[id], &generationParams, jobCompletion)
+		fmt.Println("from StartGenHand ", jobs[id].Completion)
 		session.Save(r, w)
 
 		// Write in response body the id

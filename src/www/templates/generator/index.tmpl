@@ -101,7 +101,6 @@
                 url: '/generator/imageRemove',
                 type: 'DELETE',
                 success: function (result) {
-                    $('#removeImage').prop("disabled", true);
                     $("#forwardToGeneralSettings").prop("disabled", true);
                     $("#brightnessSlider").mbsetVal(0);
                     $("#contrastSlider").mbsetVal(0);
