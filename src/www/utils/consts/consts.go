@@ -13,7 +13,6 @@ const (
  * HTTP REST
  */
 const (
-	HttpPost          = "POST"
 	HttpContentType   = "Content-Type"
 	HttpContentLength = "Content-Length"
 	HttpMimeTextPlain = "text/plain"
@@ -26,9 +25,10 @@ const (
  * Form values keys
  */
 const (
-	FormImage       = "image"
-	FormScaleFactor = "scaleFactor"
-	FormTravelSpeed = "travelSpeed"
+	FormImage       	= "image"
+	FormScaleFactor 	= "scaleFactor"
+	FormModelThickness 	= "modelThickness"
+	FormTravelSpeed 	= "travelSpeed"
 )
 
 /**

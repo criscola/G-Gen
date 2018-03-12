@@ -26,6 +26,7 @@ var (
 	templates 		*template.Template
 	jobCompletion 	= make(chan *GeneratorJob)
 	store     		= sessions.NewCookieStore([]byte(config.CookieStoreKey))
+
 )
 
 func main() {
@@ -205,18 +206,21 @@ func StartGeneratorJobHandler(w http.ResponseWriter, r *http.Request, ps httprou
 
 		session.Values[consts.SessionGeneratorJob] = jobs
 
-		scaleFactor, err := strconv.ParseFloat(r.FormValue(consts.FormScaleFactor), 64)
+		scaleFactor, err := strconv.Atoi(r.FormValue(consts.FormScaleFactor))
 		checkError(err)
-		travelSpeed, err := strconv.ParseFloat(r.FormValue(consts.FormScaleFactor), 64)
+		//modelThickness, err := strconv.Atoi(r.FormValue(consts.FormModelThickness))
+		//checkError(err)
+		travelSpeed, err := strconv.Atoi(r.FormValue(consts.FormTravelSpeed))
 		checkError(err)
 
 		generationParams := GeneratorParams{
 			ScaleFactor: scaleFactor,
+			ModelThickness: 4,
 			TravelSpeed: travelSpeed,
 		}
 
-		go StartGeneratorJob(jobs[id], &generationParams, jobCompletion)
-		fmt.Println("from StartGenHand ", jobs[id].Completion)
+		go StartGeneratorJob(r, jobs[id], &generationParams, jobCompletion)
+
 		session.Save(r, w)
 
 		// Write in response body the id
