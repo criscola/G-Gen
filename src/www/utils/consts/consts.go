@@ -35,7 +35,7 @@ const (
  * Http requests parameters
  */
 const (
-	RequestFilename = "filename"
-	RequestQueueId  = "queueId"
-	RequestOutputId = "outputId"
+	RequestFilename 		= "filename"
+	RequestQueueId  		= "queueId"
+	RequestOutputId 		= "outputId"
 )

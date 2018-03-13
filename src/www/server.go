@@ -103,11 +103,16 @@ func QueueHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 		checkError(err)
 
 		id := ps.ByName(consts.RequestQueueId)
-
+		//fmt.Println("id: " + id)
 		jobs := session.Values[consts.SessionGeneratorJob].(map[string]*GeneratorJob)
+		fmt.Println("L'id ricevuto in QueueHandler è "+id)
+
+		for k, v := range jobs {
+			fmt.Printf("key[%s] value[%s]\n", k, v)
+		}
 
 		// check if there is the parameter and session
-		if id != "" && jobs[id] != nil && jobs[id].Completion != 100 {
+		if id != "" && jobs[id] != nil {
 			// if there is a job with key as queueId
 			selectedJob := <- jobCompletion
 			fmt.Println("from QueueHand ", selectedJob.Completion)
@@ -182,7 +187,6 @@ func ImagePostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 
 func StartGeneratorJobHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if r.Method == http.MethodPost {
-
 		// Start goroutine for the generator job
 		// Add goroutine to map holding all jobs with keys as id
 		// Send back 202 (accepted) status code
@@ -205,23 +209,29 @@ func StartGeneratorJobHandler(w http.ResponseWriter, r *http.Request, ps httprou
 		jobs[id] = &GeneratorJob{id, time.Now().Unix(), 0, 0}
 
 		session.Values[consts.SessionGeneratorJob] = jobs
+		session.Save(r, w)
+
+		if j := session.Values[consts.SessionGeneratorJob].(map[string]*GeneratorJob)[id]; j != nil {
+			fmt.Println("La mappa della sessione in StartGeneratorJob esiste all'id: "+id)
+			fmt.Println("Il job all'id " + id + "è: " + j.Id)
+		}
 
 		scaleFactor, err := strconv.Atoi(r.FormValue(consts.FormScaleFactor))
 		checkError(err)
-		//modelThickness, err := strconv.Atoi(r.FormValue(consts.FormModelThickness))
-		//checkError(err)
+		modelThickness, err := strconv.Atoi(r.FormValue(consts.FormModelThickness))
+		checkError(err)
 		travelSpeed, err := strconv.Atoi(r.FormValue(consts.FormTravelSpeed))
 		checkError(err)
 
 		generationParams := GeneratorParams{
 			ScaleFactor: scaleFactor,
-			ModelThickness: 4,
+			ModelThickness: modelThickness,
 			TravelSpeed: travelSpeed,
 		}
 
 		go StartGeneratorJob(r, jobs[id], &generationParams, jobCompletion)
 
-		session.Save(r, w)
+		fmt.Println("L'id generato in StartGeneratorJob come chiave del Job è: "+id)
 
 		// Write in response body the id
 		w.Header().Set(consts.HttpContentType, consts.HttpMimeTextPlain)

@@ -2,14 +2,16 @@ package main
 
 import (
 
-	"ggen/utils/consts"
 	"net/http"
-	"os/exec"
-	"strings"
-	"path/filepath"
 	"time"
+	"github.com/go-cmd/cmd"
+	"fmt"
 	"os"
 	"strconv"
+	"strings"
+	"path/filepath"
+
+	"ggen/utils/consts"
 )
 
 type GeneratorJob struct {
@@ -29,39 +31,38 @@ type GeneratorParams struct {
  * Do not attempt to write to the 'r' parameter. This would NOT be a thread-safe operation.
  */
 func StartGeneratorJob(r *http.Request, job *GeneratorJob, params *GeneratorParams, c chan *GeneratorJob) {
-/*	time.Sleep(5 * time.Second)
-	job.Completion = 60
-	c <- job
-	time.Sleep(3 * time.Second)
-	job.Completion = 78
-	time.Sleep(2 * time.Second)
-	job.Completion = 100
-	job.FinishTime = time.Now().Unix()
-	c <- job*/
 	time.Sleep(time.Second)
 	// Create copy of request
 	newRequestAlloc := *r
 	session, err := store.Get(&newRequestAlloc, consts.SessionName)
 	checkError(err)
 
+	job.updateCompletion(10, c)
+
 	imageFilename := session.Values[consts.SessionImageFilename].(string)
 	imageFilenameNoExt := strings.TrimSuffix(imageFilename, filepath.Ext(imageFilename))
-	// Get current path
-	pwd := exec.Command("pwd")
-	pwdOutput, err := pwd.Output()
-	checkError(err)
 
-	imageFilepath := string(pwdOutput)+"/uploads/"+imageFilename
-	tmpPath := string(pwdOutput[:len(pwdOutput)-1])+"/uploads/tmp/" // Remove newline byte
+	// Get current path
+	pwd := cmd.NewCmd("pwd")
+	s := <- pwd.Start()
+	pwdOutput := s.Stdout[0]
+
+	imageFilepath := pwdOutput+"/uploads/"+imageFilename
+	tmpPath := pwdOutput+"/uploads/tmp/" // Remove newline byte
 	scadFilepath := tmpPath+imageFilenameNoExt+".scad"
 
+	job.updateCompletion(40, c)
+
 	// image to .scad
-	test := exec.Command("trace2scad", "-f", "0", "-e", "10", "-o", scadFilepath, imageFilepath)
-	test.Wait()
+	trace2scad := cmd.NewCmd("trace2scad", "-f", "0", "-e", "10", "-o", scadFilepath, imageFilepath)
+	s = <- trace2scad.Start()
+	fmt.Println(s.Stdout)
 
 	scadFile, err := os.OpenFile(scadFilepath, os.O_APPEND|os.O_WRONLY, 0600)
 	checkError(err)
 	defer scadFile.Close()
+
+	job.updateCompletion(60, c)
 
 	// add scaling and render .scad to .stl
 	scalingParams := strconv.Itoa(params.ScaleFactor)
@@ -70,9 +71,22 @@ func StartGeneratorJob(r *http.Request, job *GeneratorJob, params *GeneratorPara
 
 	stlFilepath := tmpPath+imageFilenameNoExt+".stl"
 
-	exec.Command("openscad", "-o", stlFilepath, scadFilepath)
+	openscad := cmd.NewCmd("openscad", "-o", stlFilepath, scadFilepath)
+	s = <- openscad.Start()
+	fmt.Println(s.Stdout)
+
+	job.updateCompletion(80, c)
 
 	gcodeFilepath := tmpPath+imageFilenameNoExt+".gcode"
 	// slice .stl to .gcode
-	exec.Command("slic3r", stlFilepath, "--output", gcodeFilepath)
+	slic3r := cmd.NewCmd("slic3r", stlFilepath, "--output", gcodeFilepath)
+	s = <- slic3r.Start()
+	fmt.Print(s.Stdout)
+
+	job.updateCompletion(100, c)
+}
+
+func (job *GeneratorJob) updateCompletion(completion int, c chan *GeneratorJob) {
+	job.Completion = completion
+	c <- job
 }
