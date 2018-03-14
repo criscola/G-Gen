@@ -16,7 +16,7 @@
     var imageWidth = 550;
     var imagePath = "";
     var canvas;
-    var queueId;
+    var gcodeFileName;
 
     $(document).ready(function () {
         $("#canvasContainer").hide();
@@ -66,21 +66,24 @@
                                         // Get percentage from server and update loading bar
                                         $(".progress .progress-bar").attr("data-transitiongoal", percentage);
                                         $(".progress .progress-bar").progressbar();
+                                        // If percentage is 100, wait a sec then slick to the preview slide
+                                        if (percentage == 100) {
+                                            async function toPreview() {
+                                                gcodeFileName = queueId;
+                                                clearInterval(loadingBarUpdater);
+                                                await sleep(2000);
+                                                $(".generatorForm").slick("slickGoTo", 5);
+                                            }
+                                            toPreview();
+                                        }
                                     }
                                 },
                             })
-                            // Modify loading bar accordingly
-                            if (percentage >= 100) {
-                                clearInterval(loadingBarUpdater);
-                            }
                         }, 1500);
                     }
                 },
             })
 
-        });
-        $('#forwardToPreview').click(function () {
-            $(".generatorForm").slick("slickGoTo", 5);
         });
         $('#restartForm').click(function () {
             $(".generatorForm").slick("slickGoTo", 1);
@@ -109,7 +112,13 @@
                     $("#imageUpload").show();
                 }
             });
+        });
 
+        $("#download").click(function () {
+            $.ajax({
+                url: "/generator/outputs/"+gcodeFileName,
+                type: "GET",
+            })
         });
 
         // Sliders brightness/contrast
@@ -149,7 +158,7 @@
             onSlide: function (o) {
                 if (canvas != null && canvas.getObjects()[0] != null) {
                     let val = $(o).mbgetVal();
-                    img = canvas.getObjects()[0];
+                    let img = canvas.getObjects()[0];
 
                     if (img.filters[1] != null) {
                         img.filters[1]["contrast"] = parseFloat(val);
@@ -240,6 +249,10 @@
             $("#imageUpload").hide();
         }
     }
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
 </script> {{end}} {{define "content"}}
 <section class="generatorForm">
     <!-- Upload image slide -->
@@ -327,6 +340,7 @@
     <div>
         <fieldset>
             <legend class="slideTitle">Preview</legend>
+            <button id="download" type="button">Download GCode file</button>
             <button id="restartForm" type="button">Remake it</button>
             <button id="makeAnotherModel" type="button">Another one</button>
         </fieldset>

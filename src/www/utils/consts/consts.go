@@ -15,6 +15,7 @@ const (
 const (
 	HttpContentType   = "Content-Type"
 	HttpContentLength = "Content-Length"
+	HttpContentDisposition = "Content-Disposition"
 	HttpMimeTextPlain = "text/plain"
 	HttpMimeImageJpeg = "image/jpeg"
 	HttpMimeImagePng  = "image/png"
@@ -35,7 +36,6 @@ const (
  * Http requests parameters
  */
 const (
-	RequestFilename 		= "filename"
-	RequestQueueId  		= "queueId"
-	RequestOutputId 		= "outputId"
+	RequestFilename = "filename"
+	RequestJobId    = "jobId"
 )

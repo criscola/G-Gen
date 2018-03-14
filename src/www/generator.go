@@ -1,30 +1,29 @@
 package main
 
 import (
-
-	"net/http"
-	"time"
-	"github.com/go-cmd/cmd"
 	"fmt"
+	"github.com/go-cmd/cmd"
+	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
-	"path/filepath"
+	"time"
 
 	"ggen/utils/consts"
 )
 
 type GeneratorJob struct {
-	Id 			string
-	StartTime  	int64
-	FinishTime 	int64
-	Completion 	int
+	Id         string
+	StartTime  int64
+	FinishTime int64
+	Completion int
 }
 
 type GeneratorParams struct {
-	ScaleFactor 	int
-	ModelThickness 	int
-	TravelSpeed 	int
+	ScaleFactor    int
+	ModelThickness int
+	TravelSpeed    int
 }
 
 /*
@@ -44,18 +43,18 @@ func StartGeneratorJob(r *http.Request, job *GeneratorJob, params *GeneratorPara
 
 	// Get current path
 	pwd := cmd.NewCmd("pwd")
-	s := <- pwd.Start()
+	s := <-pwd.Start()
 	pwdOutput := s.Stdout[0]
 
-	imageFilepath := pwdOutput+"/uploads/"+imageFilename
-	tmpPath := pwdOutput+"/uploads/tmp/" // Remove newline byte
-	scadFilepath := tmpPath+imageFilenameNoExt+".scad"
+	imageFilepath := pwdOutput + "/uploads/" + imageFilename
+	tmpPath := pwdOutput + "/uploads/tmp/" // Remove newline byte
+	scadFilepath := tmpPath + imageFilenameNoExt + ".scad"
 
 	job.updateCompletion(40, c)
 
 	// image to .scad
 	trace2scad := cmd.NewCmd("trace2scad", "-f", "0", "-e", "10", "-o", scadFilepath, imageFilepath)
-	s = <- trace2scad.Start()
+	s = <-trace2scad.Start()
 	fmt.Println(s.Stdout)
 
 	scadFile, err := os.OpenFile(scadFilepath, os.O_APPEND|os.O_WRONLY, 0600)
@@ -67,23 +66,24 @@ func StartGeneratorJob(r *http.Request, job *GeneratorJob, params *GeneratorPara
 	// add scaling and render .scad to .stl
 	scalingParams := strconv.Itoa(params.ScaleFactor)
 	modelThickness := strconv.Itoa(params.ModelThickness)
-	scadFile.WriteString("\nscale(["+scalingParams+", "+scalingParams+", "+modelThickness+"]) {\n\t"+imageFilenameNoExt+"();\n}")
+	scadFile.WriteString("\nscale([" + scalingParams + ", " + scalingParams + ", " + modelThickness + "]) {\n\t" + imageFilenameNoExt + "();\n}")
 
-	stlFilepath := tmpPath+imageFilenameNoExt+".stl"
+	stlFilepath := tmpPath + imageFilenameNoExt + ".stl"
 
 	openscad := cmd.NewCmd("openscad", "-o", stlFilepath, scadFilepath)
-	s = <- openscad.Start()
+	s = <-openscad.Start()
 	fmt.Println(s.Stdout)
 
 	job.updateCompletion(80, c)
 
-	gcodeFilepath := tmpPath+imageFilenameNoExt+".gcode"
+	gcodeFilepath := pwdOutput + "/outputs/" + imageFilenameNoExt + ".gcode"
 	// slice .stl to .gcode
 	slic3r := cmd.NewCmd("slic3r", stlFilepath, "--output", gcodeFilepath)
-	s = <- slic3r.Start()
+	s = <-slic3r.Start()
 	fmt.Print(s.Stdout)
 
 	job.updateCompletion(100, c)
+
 }
 
 func (job *GeneratorJob) updateCompletion(completion int, c chan *GeneratorJob) {
