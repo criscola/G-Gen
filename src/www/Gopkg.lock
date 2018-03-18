@@ -2,6 +2,30 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/go-cmd/cmd"
+  packages = ["."]
+  revision = "a2f18106a9e069b001ad1136e2c89723d25301f4"
+
+[[projects]]
+  name = "github.com/gorilla/context"
+  packages = ["."]
+  revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
+  version = "v1.1"
+
+[[projects]]
+  name = "github.com/gorilla/securecookie"
+  packages = ["."]
+  revision = "e59506cc896acb7f7bf732d4fdf5e25f7ccd8983"
+  version = "v1.1.1"
+
+[[projects]]
+  name = "github.com/gorilla/sessions"
+  packages = ["."]
+  revision = "ca9ada44574153444b00d3fd9c8559e4cc95f896"
+  version = "v1.1"
+
+[[projects]]
   name = "github.com/julienschmidt/httprouter"
   packages = ["."]
   revision = "8c199fb6259ffc1af525cc3ad52ee60ba8359669"
@@ -10,6 +34,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "59de32be4f2bbe73f4cedb526c7cc61b1ece6defba7c75990dfbffa4656282ea"
+  inputs-digest = "a9223c37e987a471023ca4422880f04d9e515f7ae89b44d8696f0c6a7ebcf344"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -1,0 +1,8 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/xenial64"
+  config.vm.network "forwarded_port", guest: 8080, host: 80
+
+  config.vm.synced_folder '.', '/vagrant', disabled: true
+  config.vm.synced_folder "../src/www/", "/home/vagrant/go/src/ggen", create: "true"
+  config.vm.provision "shell", path: "setup.sh"
+end
