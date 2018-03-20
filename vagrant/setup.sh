@@ -6,7 +6,7 @@ apt-get -y update
 apt-get -y upgrade
 
 # Golang
-wget "https://dl.google.com/go/go1.10.linux-amd64.tar.gz" -q
+wget "https://dl.google.com/go/go1.10.linux-amd64.tar.gz" -q --no-check-certificate
 tar -C /usr/local -xzf go1.10.linux-amd64.tar.gz
 rm -rf go1.10.linux-amd64.tar.gz
 
