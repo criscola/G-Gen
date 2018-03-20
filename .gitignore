@@ -1,4 +1,4 @@
 \~$*
 /src/www/.idea/*
-/.vagrant
+vagrant/.vagrant/
 *.log
