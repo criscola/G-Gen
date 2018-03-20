@@ -5,7 +5,7 @@ package consts
  */
 const (
 	SessionName          = "UserSession"
-	SessionImageFilename = "SessionImageFilename"
+	//SessionImageFilename = "SessionImageFilename"
 	SessionGeneratorJob  = "SessionGeneratorJob"
 )
 

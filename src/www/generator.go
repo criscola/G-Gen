@@ -14,10 +14,11 @@ import (
 )
 
 type GeneratorJob struct {
-	Id         string
+	FileNames  string
 	StartTime  int64
 	FinishTime int64
 	Completion int
+	Params     GeneratorParams
 }
 
 type GeneratorParams struct {
@@ -29,7 +30,7 @@ type GeneratorParams struct {
 /*
  * Do not attempt to write to the 'r' parameter. This would NOT be a thread-safe operation.
  */
-func StartGeneratorJob(r *http.Request, job *GeneratorJob, params *GeneratorParams, c chan *GeneratorJob) {
+func StartGeneratorJob(r *http.Request, job *GeneratorJob, c chan *GeneratorJob) {
 	time.Sleep(time.Second)
 	// Create copy of request
 	newRequestAlloc := *r
@@ -40,7 +41,7 @@ func StartGeneratorJob(r *http.Request, job *GeneratorJob, params *GeneratorPara
 
 	imageFilename := session.Values[consts.SessionImageFilename].(string)
 	imageFilenameNoExt := strings.TrimSuffix(imageFilename, filepath.Ext(imageFilename))
-
+	fmt.Println("imageFilename for gcode is: ", imageFilename)
 	// Get current path
 	pwd := cmd.NewCmd("pwd")
 	s := <-pwd.Start()
@@ -64,8 +65,8 @@ func StartGeneratorJob(r *http.Request, job *GeneratorJob, params *GeneratorPara
 	job.updateCompletion(60, c)
 
 	// add scaling and render .scad to .stl
-	scalingParams := strconv.Itoa(params.ScaleFactor)
-	modelThickness := strconv.Itoa(params.ModelThickness)
+	scalingParams := strconv.Itoa(job.Params.ScaleFactor)
+	modelThickness := strconv.Itoa(job.Params.ModelThickness)
 	scadFile.WriteString("\nscale([" + scalingParams + ", " + scalingParams + ", " + modelThickness + "]) {\n\t" + imageFilenameNoExt + "();\n}")
 
 	stlFilepath := tmpPath + imageFilenameNoExt + ".stl"
