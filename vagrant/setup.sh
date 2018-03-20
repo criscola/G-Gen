@@ -27,7 +27,7 @@ apt-get -y install openscad
 apt-get -y install slic3r
 
 mkdir "/usr/local/trace2scad"
-wget -O "/usr/local/trace2scad/trace2scad" -q "http://aggregate.org/MAKE/TRACE2SCAD/trace2scad"
+wget -O "/usr/local/trace2scad/trace2scad" -q "http://aggregate.org/MAKE/TRACE2SCAD/trace2scad" --no-check-certificate
 chmod +x "/usr/local/trace2scad/trace2scad"
 source "/etc/profile"
 echo "cd /home/vagrant/go/src/ggen" >> /home/vagrant/.bashrc
