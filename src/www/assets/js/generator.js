@@ -1,7 +1,6 @@
 var imageWidth = 550;
 var imagePath = "";
 var canvas;
-var jobId;
 var fileNames;
 
 $(document).ready(function () {
@@ -27,7 +26,7 @@ $(document).ready(function () {
 
         // Get parameters from inputs
         let formData = {
-            "fileName": fileNames,
+            "jobId": getJobId(),
             "scaleFactor": $("input[name=scaleFactor]").val(),
             "modelThickness": $("input[name=modelThickness]").val(),
             "travelSpeed": $("input[name=travelSpeed]").val(),
@@ -40,10 +39,10 @@ $(document).ready(function () {
             data: formData,
             success: function (queueId) {
                 if (queueId != "") {
-                    console.log("L'id ritornato dal server è " + queueId);
+                    setJobId(queueId);
                     let percentage = 0;
                     // Ask for percentage from server
-                    loadingBarUpdater = setInterval(function () {
+                    let loadingBarUpdater = setInterval(function () {
                         $.ajax({
                             url: "/generator/queue/" + queueId,
                             type: "GET",
@@ -69,7 +68,6 @@ $(document).ready(function () {
                 }
             },
         })
-
     });
     $('#restartForm').click(function () {
         $(".generatorForm").slick("slickGoTo", 1);
@@ -87,7 +85,7 @@ $(document).ready(function () {
 
     $('#removeImage').click(function () {
         $.ajax({
-            url: '/generator/imageRemove/'+jobId,
+            url: '/generator/imageRemove/'+getJobId(),
             type: 'DELETE',
             success: function (result) {
                 $("#forwardToGeneralSettings").prop("disabled", true);
@@ -100,10 +98,11 @@ $(document).ready(function () {
         });
     });
 
+    // Image download button event
     $("#download").click(function () {
-        console.log("jobId: " + jobId);
+        console.log("jobId: " + getJobId());
         $.ajax({
-            url: "/generator/outputs/"+jobId,
+            url: "/generator/outputs/"+getJobId(),
             type: "GET",
         })
     });
@@ -169,36 +168,44 @@ $(document).ready(function () {
     // If cookie with imageName exists, ask server if image is still there, if yes, create canvas with it
     let cookieImage = Cookies.get("ImageName");
     if (cookieImage !== undefined) {
-        console.log("imageName "+ cookieImage);
+        console.log("imageName " + cookieImage);
         createCanvasFromImage(cookieImage);
     }
+    function getJobId() {
+        return Cookies.get("JobId");
+    }
+
+    function setJobId(val) {
+        Cookies.set("JobId", val);
+    }
+
+    Dropzone.options.imageUpload = {
+        paramName: "image", // The name that will be used to transfer the file
+        maxFilesize: 20, // MB
+        previewsContainer: false,
+        accept: function (file, done) {
+            console.log("image accepted");
+            // Checks if file has an image extension. If not, decline upload
+            let re = /(?:\.([^.]+))?$/;
+            let ext = re.exec(file.name)[1];
+            ext = ext.toLowerCase();
+            if (ext == "jpeg" || ext == "png" || ext == "bmp" || ext == "jpg") {
+                done();
+            } else {
+                alert("Accepted filetypes are JPEG, JPG, PNG, BMP.");
+            }
+        },
+        // On image upload success
+        success: function (file, response) {
+            console.log("upload image success");
+            createCanvasFromImage(response);
+            Cookies.set("ImageName", response, { expires: 3 });
+        }
+    };
 });
 
-Dropzone.options.imageUpload = {
-    paramName: "image", // The name that will be used to transfer the file
-    maxFilesize: 5, // MB
-    previewsContainer: false,
-    accept: function (file, done) {
-        // Checks if file has an image extension. If not, decline upload
-        let re = /(?:\.([^.]+))?$/;
-        let ext = re.exec(file.name)[1];
-        ext = ext.toLowerCase();
-        if (ext == "jpeg" || ext == "png" || ext == "bmp" || ext == "jpg") {
-            done();
-        } else {
-            alert("Accepted filetypes are JPEG, JPG, PNG, BMP.");
-        }
-    },
-    // On image upload success
-    success: function (file, response) {
-        createCanvasFromImage(response);
-        Cookies.set("ImageName", response, { expires: 3 });
-    }
-};
-
 function createCanvasFromImage(imageName) {
-    console.log("let's test this shit");
-    if (imageName != "") {
+    if (imageName !== "") {
         $("#canvasContainer").show();
         let canvasContainer;
 

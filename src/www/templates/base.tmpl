@@ -2,61 +2,44 @@
 <!DOCTYPE html>
 <html lang="en">
 
-	<head>
-		<meta charset="UTF-8">
+<head>
+	<meta charset="UTF-8">
 
-        <title>{{template "title" .}}</title>
+	<title>{{template "title" .}}</title>
 
-        <link rel="stylesheet" href="../assets/css/style.css">
-		<link rel="stylesheet" href="../assets/lib/css/pushy-buttons.css">
-        
-        <script src="../assets/lib/js/fonts.js"></script>
-        <script src="../assets/lib/js/jquery-3.3.1.min.js"></script>
-        <script src="../assets/lib/js/jquery.history.min.js"></script>
+	<!--<link rel="stylesheet" href="../assets/css/style.css">-->
+	<link rel="stylesheet" href="../assets/css/scribbler-landing.css">
+	<link rel="stylesheet" href="../assets/css/pushy-buttons.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,600,700,800,900" rel="stylesheet">
 
-        {{template "head" .}}
-	</head>
+	<script src="../assets/js/jquery-3.3.1.min.js"></script> {{template "head" .}}
+	<link rel="stylesheet" href="../assets/css/scribbler-global.css">
 
-	<body>
-		<header class="site-header" id="masthead">
-			<nav class="nav container">
-				<ul class="nav__menu" id="nav-primary">
-					<li class="nav__menu-item home">
-						<a class="nav__menu-link page-link" href="../" rel="home">GGEN</a>
-					</li>
-					<li class="nav__menu-item">
-						<a class="nav__menu-link page-link" href="products.html" title="Products">Home</a>
-					</li>
-					<li class="nav__menu-item">
-						<a class="nav__menu-link page-link" href="about.html" title="About Us">About</a>
-					</li>
-				</ul>
-				<ul class="nav__menu" id="nav-secondary">
-					<li class="nav__menu-item sign-in">
-						<a class="nav__menu-link page-link" href="https://github.com/criscola" title="Github.com">Github.com</a>
-					</li>
-				</ul>
-			</nav>
-		</header>
-		<div class="site-main" id="main">	
-			<section class="section hero">
-				<div class="container">
-					{{template "content" .}}
-				</div>
-			</section>
-			<footer class="site-footer" id="footer">
-				<nav class="nav container">
-					<ul class="nav__menu" id="menu-footer">
-						<li class="nav__menu-item"><a class="nav__menu-link page-link" href="tos.html" title="Terms of Service">Terms</a></li>
-						<li class="nav__menu-item"><a class="nav__menu-link page-link" href="privacy.html" title="Privacy Policy">Privacy</a></li>
-						<li class="nav__menu-item"><a class="nav__menu-link page-link" href="faq.html" title="Frequently Asked Questions">FAQ</a></li>
-					</ul>
-				</nav>
-				<div class="footnote container">
-					<p class="footnote">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deleniti quibusdam est quos quidem aliquid quae atque necessitatibus labore reprehenderit ducimus repellendus.</p>
-				</div>
-			</footer>
-		</div>
-	</body>
+</head>
+
+<body>
+	<nav>
+		<div class="logo" style="font-weight: bold;">GGEN</div>
+		<ul class="menu">
+			<div class="menu__item toggle">
+				<span></span>
+			</div>
+			<li class="menu__item">
+				<a href="" class="link link--dark">
+					<i class="fa fa-github"></i> Github</a>
+			</li>
+		</ul>
+	</nav>
+	<div class="wrapper">
+		{{template "content" .}}
+	</div>
+	<footer class="footer" style="background-color: #E8E8E8; color: #4A4A4A;">
+		Lorem ipsum dolor sit amet. 2018 &copy; Cristiano Colangelo
+	</footer>
+
+
+</body>
+
 </html>
 {{end}}

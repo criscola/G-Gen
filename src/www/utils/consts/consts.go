@@ -26,6 +26,7 @@ const (
  * Form values keys
  */
 const (
+	FormJobId			= "jobId"
 	FormImage       	= "image"
 	FormScaleFactor 	= "scaleFactor"
 	FormModelThickness 	= "modelThickness"
@@ -39,3 +40,10 @@ const (
 	RequestFilename = "filename"
 	RequestJobId    = "jobId"
 )
+
+/**
+ * General variables
+ */
+ const (
+ 	DefaultImageExtension = "png"
+ )

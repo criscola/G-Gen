@@ -1,6 +1,6 @@
 # Diario progetto G-Gen
 
-#### Data : 12 marzo 2018
+#### Data : 20 marzo 2018
 
 #### Autore : Cristiano Colangelo
 
@@ -8,17 +8,19 @@
 
 ## Lavori svolti
 
-- Continuato a lavorare sulla generazione del gcode
+- Iniziato a fare del refactoring
+- Iniziato a modificare il protocollo HTTP fra client in modo da averne uno più standard e comprensibile
+- Modificata struttura file .js separandoli in file
+- Modificata struttura cartella /assets per separare le librerie esterne dai file interni al progetto
+- Iniziato a scrivere conversione delle immagini in .png se queste non fossero già in .png (questo è meglio per l'algoritmo di disegno e per non doversi portare in giro anche l'estensione del file)
 
 
 ## Problemi riscontrati e soluzioni
 
-- Sto avendo qualche problema con lo script `trace2scad` per generare il file `.scad`. In pratica da riga di comando funziona tutto mentre tramite codice no. Non viene generato il file .scad, devo trovare il modo di fare capire perchè il comando non ritorna niente.
-
 ## Punto di situazione del lavoro
 
-Stesura generazione GCode, a buon punto.
+Sempre al lavoro sul sito web
 
 ## Programma per la prossima volta
 
-Continuare generazione GCode, risolvere problema trace2scad
+Continuare refactoring e testare la conversione, finire il download del gcode

@@ -4,8 +4,12 @@ import (
 	"crypto/rand"
 	"encoding/gob"
 	"encoding/hex"
+	"fmt"
 	"ggen/utils/config"
 	"ggen/utils/consts"
+	"github.com/gorilla/context"
+	"github.com/gorilla/sessions"
+	"github.com/julienschmidt/httprouter"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -14,13 +18,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
-
-	"fmt"
-		"github.com/gorilla/context"
-	"github.com/gorilla/sessions"
-	"github.com/julienschmidt/httprouter"
-	"github.com/go-cmd/cmd"
 )
 
 var (
@@ -48,6 +45,7 @@ func main() {
 
 }
 
+// IndexHandler handles the index page route
 func IndexHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	templates = template.Must(template.ParseFiles("templates/home/index.tmpl", "templates/base.tmpl"))
 	err := templates.ExecuteTemplate(w, "base", nil)
@@ -56,6 +54,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 	}
 }
 
+// GeneratorHandler handles the generator page route
 func GeneratorHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Loads and parses the template file for this handler
 	templates = template.Must(template.ParseFiles("templates/generator/index.tmpl", "templates/base.tmpl"))
@@ -71,33 +70,36 @@ func GeneratorHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 
 	// Save it before we write to the response/ from the handler.
 	session.Save(r, w)
+
 }
 
+// ImageGetHandler handles get requests for images inside the upload directory
 func ImageGetHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if r.Method == http.MethodGet {
-		session := getSession(r)
+		fmt.Println("ID FROM CLIENT IS: " + ps.ByName(consts.RequestFilename))
+		job := getGeneratorJobById(r, ps.ByName(consts.RequestFilename))
 
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		fileName := job.FileNames + "." + consts.DefaultImageExtension
+		fmt.Println("image fileName: " + fileName)
+		// If the extension is jpg convert to jpeg for the content-type response
+		/*
+		extension := strings.TrimPrefix(filepath.Ext(fileName), ".")
+		if strings.EqualFold(extension, "jpg") {
+			extension = "jpeg"
 		}
+		w.Header().Set(consts.HttpContentType, "image/"+extension)
+		*/
 
-		if strings.EqualFold(ps.ByName(consts.RequestFilename), session.Values[consts.SessionImageFilename].(string)) {
-			extension := strings.TrimPrefix(filepath.Ext(ps.ByName(consts.RequestFilename)), ".")
-			if strings.EqualFold(extension, "jpg") {
-				extension = "jpeg"
-			}
-			w.Header().Set(consts.HttpContentType, "image/"+extension)
+		w.Header().Set(consts.HttpContentType, "image/"+consts.DefaultImageExtension)
+		// Read image from disk
+		data, err := ioutil.ReadFile(filepath.Join("./uploads/", fileName))
+		checkError(err)
 
-			data, err := ioutil.ReadFile(filepath.Join("./uploads/", session.Values[consts.SessionImageFilename].(string)))
-			checkError(err)
-
-			w.Write(data)
-		} else {
-			w.WriteHeader(http.StatusForbidden)
-		}
+		w.Write(data)
 	}
 }
 
+// QueueHandler returns data about a job in progress by their jobId provided through ps parameter
 func QueueHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if r.Method == http.MethodGet {
 		session := getSession(r)
@@ -105,16 +107,15 @@ func QueueHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 		// Get the request id
 		id := ps.ByName(consts.RequestJobId)
 		// Get the job map from session
-		jobs := session.Values[consts.SessionGeneratorJob].(map[string]*GeneratorJob)
+		jobs := getGeneratorJobs(session)
 
 		// check if id provided by the HTTP request isn't missing and that the job[id] exists
 		if id != "" && jobs[id] != nil {
 			// Get the last selected job supplied by the jobCompletion channel
 			var selectedJob *GeneratorJob
 			percCount := len(jobCompletion)
-			fmt.Println("c: ", percCount)
 
-			if percCount > 0 {
+			if percCount > 0 && percCount < 100 {
 				for i := 0; i < percCount; i++ {
 					selectedJob = <-jobCompletion
 					fmt.Println("\nSelectedjob completion: " + strconv.Itoa(selectedJob.Completion))
@@ -144,18 +145,18 @@ func QueueHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 	}
 }
 
+// OutputHandler handles the download requests by their jobId provided through ps
 func OutputHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if r.Method == http.MethodGet {
 		id := ps.ByName(consts.RequestJobId)
-		if  id != "" {
+		if id != "" {
 			session := getSession(r)
+			jobs := getGeneratorJobs(session)
 
-			jobs := session.Values[consts.SessionGeneratorJob].(map[string]*GeneratorJob)
 			if jobs != nil && jobs[id] != nil {
 				job := jobs[id]
 				if job.Completion == 100 {
-					fmt.Println("id OutputHandler is: ", session.Values[consts.SessionImageFilename])
-					gcode, err := ioutil.ReadFile("/outputs/"+id+".gcode")
+					gcode, err := ioutil.ReadFile("/outputs/" + job.FileNames + ".gcode")
 					checkError(err)
 					w.Header().Set(consts.HttpContentDisposition, "attachment; filename=file.gcode")
 					w.Header().Set(consts.HttpContentType, r.Header.Get("Content-Type"))
@@ -174,6 +175,7 @@ func OutputHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	}
 }
 
+// ImagePostHandler handles image uploads to the server
 func ImagePostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if r.Method == http.MethodPost {
 		r.ParseMultipartForm(32 << 20)
@@ -184,30 +186,40 @@ func ImagePostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 
 		// Generate random filename which will be used widely for all the files used in the current job
 		fileNames := TempFileName()
-
+		fmt.Println("FILENAMES GENERATED IS: " + fileNames)
 		// Generate random job id
 		session := getSession(r)
 
 		// Generate id for job and add to session struct
 		var jobs map[string]*GeneratorJob
 		var jobId string
+
 		// If the job map is already existing, get job, or else make a new job map
 		if session.Values[consts.SessionGeneratorJob] != nil {
 			jobs = session.Values[consts.SessionGeneratorJob].(map[string]*GeneratorJob)
+			fmt.Println("GOT JOB MAP")
 		} else {
 			jobs = make(map[string]*GeneratorJob)
+			fmt.Println("CREATED JOB MAP")
 		}
+
 		// Create new job id
 		jobId = GetRandomString()
-		jobs[jobId] = &GeneratorJob{fileNames, nil, nil, 0, nil}
+		fmt.Println("JOBID GENERATED IS: " + jobId)
+
+		// Create a new GeneratorJob
+		jobs[jobId] = &GeneratorJob{fileNames, 0, 0, 0, GeneratorParams{}}
+		session.Values[consts.SessionGeneratorJob] = jobs
 		sessions.Save(r, w)
 
 		// If image is not .png format, convert to .png
 		extension := strings.ToLower(filepath.Ext(handler.Filename))
-		imagePath := filepath.Join("./uploads/", fileNames + extension)
-		if extension != ".png" {
-			cmd.NewCmd("convert " + imagePath + " ./uploads/" + fileNames + ".png")
-		}
+		imagePath := filepath.Join("./uploads/", fileNames+extension)
+		/*if extension != ".png" {
+			imageToPngCommand := cmd.NewCmd("convert " + imagePath + " ./uploads/" + fileNames + ".png")
+			imageToPngCommand.Start()
+			fmt.Println("Converting image to png...")
+		}*/
 
 		// Open/Create temp file for image using name stored in the session store
 		f, err := os.OpenFile(imagePath, os.O_WRONLY|os.O_CREATE, 0666)
@@ -217,7 +229,7 @@ func ImagePostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 		_, err = io.Copy(f, file)
 		checkError(err)
 
-		// Return job id
+		// Return job id to client
 		w.Header().Set(consts.HttpContentType, consts.HttpMimeTextPlain)
 		w.Header().Set(consts.HttpContentLength, strconv.Itoa(len(jobId)))
 		w.Write([]byte(jobId))
@@ -227,7 +239,9 @@ func ImagePostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 
 }
 
+// StartGeneratorJobHandler starts a job using the data provided in the POST request body
 func StartGeneratorJobHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	fmt.Println("startgenjob")
 	if r.Method == http.MethodPost {
 		// Start goroutine for the generator job
 		// Add goroutine to map holding all jobs with keys as id
@@ -235,68 +249,48 @@ func StartGeneratorJobHandler(w http.ResponseWriter, r *http.Request, ps httprou
 		// Get session
 		session := getSession(r)
 
-		// Generate id for job
-		id := GetRandomString()
-		fmt.Println("GeneratorJob id: ", id);
-		/*
-		// Generate id for job and add to session struct
-		var jobs map[string]*GeneratorJob
+		id := r.FormValue(consts.RequestJobId)
+		fmt.Println("ID GENJOB: " + id)
+		if id != "" {
+			scaleFactor, err := strconv.Atoi(r.FormValue(consts.FormScaleFactor))
+			checkError(err)
+			modelThickness, err := strconv.Atoi(r.FormValue(consts.FormModelThickness))
+			checkError(err)
+			travelSpeed, err := strconv.Atoi(r.FormValue(consts.FormTravelSpeed))
+			checkError(err)
 
-		if session.Values[consts.SessionGeneratorJob] != nil {
-			// Append new job to the list
-			jobs = session.Values[consts.SessionGeneratorJob].(map[string]*GeneratorJob)
+			genJob := getGeneratorJobs(session)[id]
+
+			genJob.Params = GeneratorParams{
+				ScaleFactor:    scaleFactor,
+				ModelThickness: modelThickness,
+				TravelSpeed:    travelSpeed,
+			}
+
+			go StartGeneratorJob(genJob, jobCompletion)
+
+			// Write in response body the id
+			w.Header().Set(consts.HttpContentType, consts.HttpMimeTextPlain)
+			w.Header().Set(consts.HttpContentLength, strconv.Itoa(len("OK")))
+			w.Write([]byte("OK"))
 		} else {
-			jobs = make(map[string]*GeneratorJob)
-		}*/
-		fileNames := ""
-		if r.FormValue("fileNames") != "" {
-			fileNames = r.FormValue("fileNames")
+			w.WriteHeader(http.StatusBadRequest)
 		}
-		scaleFactor, err := strconv.Atoi(r.FormValue(consts.FormScaleFactor))
-		checkError(err)
-		modelThickness, err := strconv.Atoi(r.FormValue(consts.FormModelThickness))
-		checkError(err)
-		travelSpeed, err := strconv.Atoi(r.FormValue(consts.FormTravelSpeed))
-		checkError(err)
-
-		generationParams := GeneratorParams{
-			ScaleFactor:    scaleFactor,
-			ModelThickness: modelThickness,
-			TravelSpeed:    travelSpeed,
-		}
-		genJob := &GeneratorJob{fileNames, time.Now().Unix(), 0, 0, generationParams}
-		jobs[id] = genJob
-
-		session.Values[consts.SessionGeneratorJob] = jobs
-		session.Save(r, w)
-
-		if j := session.Values[consts.SessionGeneratorJob].(map[string]*GeneratorJob)[id]; j != nil {
-			fmt.Println("La mappa della sessione in StartGeneratorJob esiste all'id: " + id)
-			fmt.Println("Il job all'id " + id + "è: " + j.Id)
-		}
-
-		go StartGeneratorJob(r, genJob, jobCompletion)
-
-		fmt.Println("L'id generato in StartGeneratorJob come chiave del Job è: " + id)
-
-		// Write in response body the id
-		w.Header().Set(consts.HttpContentType, consts.HttpMimeTextPlain)
-		w.Header().Set(consts.HttpContentLength, strconv.Itoa(len(id)))
-		w.Write([]byte(id))
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
+// ImageRemoveHandler handles DELETE requests for images
 func ImageRemoveHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if r.Method == http.MethodDelete {
 		if id := ps.ByName(consts.RequestJobId); id != "" {
-			imageName := getGeneratorJobById(r, id).FileNames
-			os.Remove(filepath.Join("./uploads/", )
+			imageName := getGeneratorJobById(r, id).FileNames + "." + consts.DefaultImageExtension
+			fmt.Println("IMAGENAME IN REMOVEHANDLER IS : " + imageName)
+			os.Remove(filepath.Join("./uploads/", imageName))
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
 		}
-
 	} else {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
@@ -318,32 +312,41 @@ again:
 	return temp
 }
 
+// GetRandomString generates a 16-bytes alphanumeric random string
 func GetRandomString() string {
 	randBytes := make([]byte, 16)
 	rand.Read(randBytes)
 	return hex.EncodeToString(randBytes)
 }
 
+// checkError checks for an error and panics if something went wrong
 func checkError(err error) {
 	if err != nil {
 		panic(err)
 	}
 }
 
-func getSession(r *http.Request) *sessions.Session{
+// getSession gets the user session through its HTTP request
+func getSession(r *http.Request) *sessions.Session {
 	session, err := store.Get(r, consts.SessionName)
+	if session.IsNew {
+		fmt.Println("created new session " + session.Name())
+	}
 	checkError(err)
 	return session
 }
 
+// getGeneratorJobs gets the map containing all the job belonging to a session specified by the session parameter
 func getGeneratorJobs(session *sessions.Session) map[string]*GeneratorJob {
 	return session.Values[consts.SessionGeneratorJob].(map[string]*GeneratorJob)
 }
 
+// getGeneratorJobById gets a job associated with an id of a specific session
 func getGeneratorJobById(r *http.Request, id string) *GeneratorJob {
 	return getGeneratorJobs(getSession(r))[id]
 }
 
 func init() {
+	fmt.Println("Starting webserver at " + config.ServerURL + ":" + config.ServerPort + "...")
 	gob.Register(map[string]*GeneratorJob{})
 }

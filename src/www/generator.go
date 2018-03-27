@@ -3,14 +3,11 @@ package main
 import (
 	"fmt"
 	"github.com/go-cmd/cmd"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
-
-	"ggen/utils/consts"
 )
 
 type GeneratorJob struct {
@@ -27,19 +24,14 @@ type GeneratorParams struct {
 	TravelSpeed    int
 }
 
-/*
- * Do not attempt to write to the 'r' parameter. This would NOT be a thread-safe operation.
- */
-func StartGeneratorJob(r *http.Request, job *GeneratorJob, c chan *GeneratorJob) {
+// StartGeneratorJob is used to start a generator job associated with a specific session
+func StartGeneratorJob(job *GeneratorJob, c chan *GeneratorJob) {
 	time.Sleep(time.Second)
-	// Create copy of request
-	newRequestAlloc := *r
-	session, err := store.Get(&newRequestAlloc, consts.SessionName)
-	checkError(err)
 
+	job.StartTime = time.Now().Unix()
 	job.updateCompletion(10, c)
 
-	imageFilename := session.Values[consts.SessionImageFilename].(string)
+	imageFilename := job.FileNames
 	imageFilenameNoExt := strings.TrimSuffix(imageFilename, filepath.Ext(imageFilename))
 	fmt.Println("imageFilename for gcode is: ", imageFilename)
 	// Get current path
@@ -83,8 +75,8 @@ func StartGeneratorJob(r *http.Request, job *GeneratorJob, c chan *GeneratorJob)
 	s = <-slic3r.Start()
 	fmt.Print(s.Stdout)
 
+	job.FinishTime = time.Now().Unix()
 	job.updateCompletion(100, c)
-
 }
 
 func (job *GeneratorJob) updateCompletion(completion int, c chan *GeneratorJob) {

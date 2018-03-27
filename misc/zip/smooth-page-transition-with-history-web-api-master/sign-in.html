@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<title>Sign-in &mdash; Acme</title>
+		<link rel="stylesheet" href="assets/css/style.css">
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/history.js/1.8/bundled/html4+html5/jquery.history.js"></script>
+
+		<script type="text/javascript">
+			WebFontConfig = {
+				google: { families: [ 'Source+Sans+Pro:400,400italic,600,300,300italic,600italic:latin' ] }
+			};
+			(function() {
+				var wf = document.createElement('script');
+				wf.src = 'https://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js';
+				wf.type = 'text/javascript';
+				wf.async = 'true';
+				var s = document.getElementsByTagName('script')[0];
+				s.parentNode.insertBefore(wf, s);
+			})();
+		</script>
+		<script>
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+				(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+			ga('create', 'UA-5156544-19', 'auto');
+			ga('send', 'pageview');
+		</script>
+	</head>
+
+	<body>
+	<div class="site" id="wrap">
+		<section class="section sign-in">
+			<header class="section__header">
+				<h1 class="section__heading">Sign-in</h1>	
+			</header>
+			<div class="container">
+				<form class="sign-in__form" action="">
+					<div>
+						<label class="sign-in__form-label" for="username">Username</label>
+						<input class="sign-in__form-field" type="text" id="username" placeholder="e.g. john">
+					</div>
+					<div>
+						<label class="sign-in__form-label" for="password">Password</label>
+						<input class="sign-in__form-field" type="password" id="password">
+					</div>
+					<div>
+						<button class="btn btn--primary">Send</button>
+					</div>
+					<div>
+						<a class="page-link" href="sign-up.html" title="Sign-up">I don&#039;t have an account?</a>
+					</div>
+				</form>		
+			</div>
+		</section>
+	</div>
+	<script src="assets/js/script.js"></script>
+	</body>
+</html>
