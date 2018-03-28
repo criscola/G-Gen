@@ -19,7 +19,8 @@ const (
 	HttpMimeTextPlain = "text/plain"
 	HttpMimeImageJpeg = "image/jpeg"
 	HttpMimeImagePng  = "image/png"
-	HttpMimeImageGif  = "image/gif"
+	HttpMimeImageGif  				= "image/gif"
+	HttpMimeApplicationOctetStream  = "application/octet-stream"
 )
 
 /**

@@ -81,8 +81,14 @@
                             }
                         }
                     });
-
                 }, 1500);
+
+                $("#gcodeViewerContainer").append("<iframe src='/viewer/gcode_viewer.html' width='500' height='400'></iframe>");
+
+                // Handle download button
+                $("#download").click(function () {
+                    window.open('http://ggen.com:8080/generator/outputs/'+getJobId(), "_blank");
+                })
             }
         });
         $('#restartForm').click(function () {
@@ -113,13 +119,17 @@
                 }
             });
         });
-
+/*
         $("#download").click(function () {
             $.ajax({
-                url: "/generator/outputs/"+gcodeFileName,
+                url: "/generator/outputs/"+getJobId(),
                 type: "GET",
+                success: function () {
+                    let temp = "<a href="
+                    let t = $("<a href=")
+                }
             })
-        });
+        });*/
 
         // Sliders brightness/contrast
         $("#brightnessSlider").mbSlider({
@@ -350,7 +360,10 @@
     <div>
         <fieldset>
             <legend class="slideTitle">Preview</legend>
-            <button id="download" type="button">Download GCode file</button>
+            <div id="gcodeViewerContainer">
+
+            </div>
+            <input type="button" id="download" value="Download GCode file" />
             <button id="restartForm" type="button">Remake it</button>
             <button id="makeAnotherModel" type="button">Another one</button>
         </fieldset>

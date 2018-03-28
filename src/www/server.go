@@ -30,6 +30,7 @@ var (
 func main() {
 	router := httprouter.New()
 	router.ServeFiles("/assets/*filepath", http.Dir("assets"))
+	router.ServeFiles("/viewer/*filepath", http.Dir("viewer"))
 
 	/** ROUTES **/
 	router.GET("/", IndexHandler)
@@ -148,24 +149,24 @@ func QueueHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 // OutputHandler handles the download requests by their jobId provided through ps
 func OutputHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if r.Method == http.MethodGet {
-		id := ps.ByName(consts.RequestJobId)
-		if id != "" {
-			session := getSession(r)
-			jobs := getGeneratorJobs(session)
-
-			if jobs != nil && jobs[id] != nil {
-				job := jobs[id]
+		fmt.Println("outputhandler invoked")
+		if id := ps.ByName(consts.RequestJobId); id != "" {
+			fmt.Println("id outputhandler is: " + id)
+			if job := getGeneratorJobById(r, id); job != nil {
 				if job.Completion == 100 {
-					gcode, err := ioutil.ReadFile("/outputs/" + job.FileNames + ".gcode")
+					gcode, err := ioutil.ReadFile("./outputs/" + job.FileNames + ".gcode")
+					fmt.Println("Job filenames is : " + job.FileNames)
 					checkError(err)
-					w.Header().Set(consts.HttpContentDisposition, "attachment; filename=file.gcode")
-					w.Header().Set(consts.HttpContentType, r.Header.Get("Content-Type"))
+
+					w.Header().Set(consts.HttpContentDisposition, "attachment; filename=\"file.gcode\"")
+					w.Header().Set(consts.HttpContentLength, strconv.Itoa(len(gcode)))
+					w.Header().Set(consts.HttpContentType, consts.HttpMimeApplicationOctetStream)
 					w.Write(gcode)
 				} else {
 					w.WriteHeader(http.StatusConflict)
 				}
 			} else {
-				w.WriteHeader(http.StatusBadRequest)
+				w.WriteHeader(http.StatusForbidden)
 			}
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
@@ -287,7 +288,8 @@ func ImageRemoveHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 		if id := ps.ByName(consts.RequestJobId); id != "" {
 			imageName := getGeneratorJobById(r, id).FileNames + "." + consts.DefaultImageExtension
 			fmt.Println("IMAGENAME IN REMOVEHANDLER IS : " + imageName)
-			os.Remove(filepath.Join("./uploads/", imageName))
+			err := os.Remove(filepath.Join("./uploads/", imageName))
+			checkError(err)
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
 		}
