@@ -47,7 +47,20 @@
     <script type="text/javascript" src="gcode_renderer.js"></script>
     <script src="renderer.js"></script>
     <script src="ui.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            let url = new URL(window.location.href);
+            let jobId = url.searchParams.get("jobId");
 
+            $.ajax({
+                url: "/generator/outputs/"+jobId,
+                type: "GET",
+                success: function (response) {
+                    GCodeImporter.importText(response.responseText.toString(), onGCodeLoaded);
+                }
+            })
+        })
+    </script>
   </head>
   <body>
 

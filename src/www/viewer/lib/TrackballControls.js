@@ -159,7 +159,6 @@ THREE.TrackballControls = function ( object, domElement ) {
 	this.zoomCamera = function () {
 
 		var factor = 1.0 + ( _zoomEnd.y - _zoomStart.y ) * _this.zoomSpeed;
-		console.log("factor is: " + factor);
 		if ( factor !== 1.0 && factor > 0.0 ) {
 
 			_eye.multiplyScalar( factor );

@@ -1,6 +1,6 @@
 # Diario progetto G-Gen
 
-#### Data : 26 marzo 2018
+#### Data : 28 marzo 2018
 
 #### Autore : Cristiano Colangelo
 
@@ -8,11 +8,11 @@
 
 ## Lavori svolti
 
-- Creato server Ubuntu Server
-  - Impostato virtual drive sul Windows per poter sviluppare su Windows https://kb.vmware.com/s/article/1022525
-  - Impostato SSH per potersi collegare dall'esterno
-  - Impostato programmi, variabili d'ambiente ecc.
-- Lavorato sulla nuova grafica del sito
+- Creato bottone per il download del GCode
+- Iniziata l'integrazione e la modifica del visualizzatore
+  - Stralciati menu e statistiche FPS
+  - Modificati controlli zoom, distanza massima e minima zoom..
+  - Iniziato a creare il codice per passare gcode dalla pagina all'iframe del viewer
 
 ## Problemi riscontrati e soluzioni
 
@@ -20,8 +20,8 @@ Ho lasciato perdere docker perchè è troppo complicato creare una configurazion
 
 ## Punto di situazione del lavoro
 
-Indietro
+Leggermente indietro
 
 ## Programma per la prossima volta
 
-Capire perchè l'upload delle immagini si è danneggiato
+Completare il caricamento del gcode nel viewer

@@ -82,8 +82,15 @@
                         }
                     });
                 }, 1500);
-
-                $("#gcodeViewerContainer").append("<iframe src='/viewer/gcode_viewer.html' width='500' height='400'></iframe>");
+                let iframe = "<iframe id='viewer' src='/viewer/gcode_viewer.html?jobId='" + getJobId() + "/' width='500' height='400'></iframe>";
+                $("#gcodeViewerContainer").append();
+                $("#viewer").on("load", function () {
+                    console.log("iframe loaded");
+                    $.ajax({
+                        url: "/viewer/gcode_viewer.gcode?jobId="+getJobId(),
+                        type: "GET",
+                    })
+                })
 
                 // Handle download button
                 $("#download").click(function () {

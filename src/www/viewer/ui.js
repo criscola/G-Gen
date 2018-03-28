@@ -73,8 +73,6 @@ function onGCodeLoaded(gcode) {
       guiControllers.gcodeIndex.setValue(0);
       guiControllers.animate.setValue(true);
 
-
-
       camera.position.z = 500;
       camera.position.y = -1500;
       camera.lookAt( gr.center );
@@ -128,6 +126,7 @@ $(function() {
   })
 
   // Drop files from desktop onto main page to import them.
+    /*
   $('body').on('dragover', function(event) {
 
     event.stopPropagation();
@@ -143,7 +142,7 @@ $(function() {
       GCodeImporter.importText(gcode, onGCodeLoaded);
     });
 
-  });
+  });*/
 
   scene = createScene($('#renderArea')[0]);
 
