@@ -142,16 +142,16 @@ $(function() {
       GCodeImporter.importText(gcode, onGCodeLoaded);
     });
 
-  });*/
+  });
 
   scene = createScene($('#renderArea')[0]);
-
+/*
   var lastImported = localStorage.getItem(config.lastImportedKey);
   if (lastImported) {
     GCodeImporter.importText(lastImported, onGCodeLoaded);
   } else {
     GCodeImporter.importPath(config.defaultFilePath, onGCodeLoaded);
-  }
+  }*/
 
   setupGui();
 });

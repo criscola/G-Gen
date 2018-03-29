@@ -7,6 +7,8 @@ apt-get -y update
 apt-get -y install software-properties-common
 apt-get -y install wget
 apt-get -y install curl
+apt-get -y install imagemagick
+apt-get -y install potrace
 useradd -m {$USERNAME} && echo "{$USERNAME}:{$USERNAME}" | chpasswd && adduser {$USERNAME} sudo
 
 # Golang

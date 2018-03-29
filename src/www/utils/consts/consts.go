@@ -43,8 +43,9 @@ const (
 )
 
 /**
- * General variables
+ * General default values
  */
  const (
  	DefaultImageExtension = "png"
+ 	DefaultCookiesMaxAge  = 259200 // 3 days in seconds
  )

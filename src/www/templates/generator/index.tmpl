@@ -17,8 +17,17 @@
     let canvas;
     let gcodeFileName;
 
+    // If current has not been assigned a session cookie yet, set default exp date of cookies 3 days from now
+    if (Cookies.get("UserSession") === undefined) {
+        let expiration = new Date();
+        // Expiration date will be from 3 days from now for all cookies
+        expiration.setHours(expiration.getHours()+24*3);
+        Cookies.set({ expires: expiration });
+    }
+
     $(document).ready(function () {
         $("#canvasContainer").hide();
+
         $(".generatorForm").slick({
             lazyLoad: 'ondemand', // ondemand progressive anticipated
             infinite: false,
@@ -39,6 +48,7 @@
             $(".generatorForm").slick("slickGoTo", 2);
 
             // Get parameters from inputs
+            console.log(getJobId());
             let formData = {
                 "jobId":            getJobId(),
                 "scaleFactor":      $("input[name=scaleFactor]").val(),
@@ -51,11 +61,11 @@
                 url: "/generator/generate",
                 type: "POST",
                 data: formData,
-                success: getJobPercentage,
+                success: handleGcodeGeneration,
             });
 
             // Get percentage of completion from server
-            function getJobPercentage(response) {
+            function handleGcodeGeneration(response) {
                 let percentage = 0;
                 let loadingBarUpdater = setInterval(function () {
                     $.ajax({
@@ -82,14 +92,12 @@
                         }
                     });
                 }, 1500);
-                let iframe = "<iframe id='viewer' src='/viewer/gcode_viewer.html?jobId='" + getJobId() + "/' width='500' height='400'></iframe>";
-                $("#gcodeViewerContainer").append();
+
+                // Create new iframe and load gcode in it for viewer
+                let iframe = "<iframe id='viewer' src='/viewer/gcode_viewer.html' width='500' height='400'></iframe>";
+                $("#gcodeViewerContainer").append(iframe);
                 $("#viewer").on("load", function () {
-                    console.log("iframe loaded");
-                    $.ajax({
-                        url: "/viewer/gcode_viewer.gcode?jobId="+getJobId(),
-                        type: "GET",
-                    })
+                    $("#viewer").contentWindow.loadGcodeFromServer(getJobId());
                 })
 
                 // Handle download button
@@ -126,17 +134,6 @@
                 }
             });
         });
-/*
-        $("#download").click(function () {
-            $.ajax({
-                url: "/generator/outputs/"+getJobId(),
-                type: "GET",
-                success: function () {
-                    let temp = "<a href="
-                    let t = $("<a href=")
-                }
-            })
-        });*/
 
         // Sliders brightness/contrast
         $("#brightnessSlider").mbSlider({
@@ -195,7 +192,7 @@
 
         });
 
-        // If cookie with imageName exists, ask server if image is still there, if yes, create canvas with it
+        // If cookie with imageName exists, create canvas with it
         let cookieImage = Cookies.get("ImageName");
         if (cookieImage !== undefined) {
             console.log("imageName "+ cookieImage);
@@ -228,7 +225,6 @@
     };
 
     function createCanvasFromImage(id) {
-        console.log("let's test this shit");
         if (id !== "") {
             $("#canvasContainer").show();
             let canvasContainer;
@@ -269,11 +265,12 @@
     }
 
     function getJobId() {
+        console.log("getJobId(): " + Cookies.get("JobId"));
         return Cookies.get("JobId");
     }
 
     function setJobId(jobId) {
-        Cookies.set("JobId", jobId);
+        Cookies.set("JobId", jobId, { expires: 3 });
     }
 
     function sleep(ms) {

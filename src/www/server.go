@@ -24,7 +24,7 @@ var (
 	templates     *template.Template
 	jobComplPerc  = 0
 	jobCompletion = make(chan *GeneratorJob, 100)
-	store         = sessions.NewCookieStore([]byte(config.CookieStoreKey))
+	store         *sessions.CookieStore
 )
 
 func main() {
@@ -350,5 +350,7 @@ func getGeneratorJobById(r *http.Request, id string) *GeneratorJob {
 
 func init() {
 	fmt.Println("Starting webserver at " + config.ServerURL + ":" + config.ServerPort + "...")
+	store = sessions.NewCookieStore([]byte(config.CookieStoreKey))
+	store.Options.MaxAge = consts.DefaultCookiesMaxAge
 	gob.Register(map[string]*GeneratorJob{})
 }
