@@ -11,13 +11,14 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"html/template"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"github.com/go-cmd/cmd"
+	"io"
 )
 
 var (
@@ -182,7 +183,6 @@ func ImagePostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 		r.ParseMultipartForm(32 << 20)
 		file, handler, err := r.FormFile(consts.FormImage)
 		checkError(err)
-
 		defer file.Close()
 
 		// Generate random filename which will be used widely for all the files used in the current job
@@ -213,22 +213,27 @@ func ImagePostHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 		session.Values[consts.SessionGeneratorJob] = jobs
 		sessions.Save(r, w)
 
-		// If image is not .png format, convert to .png
-		extension := strings.ToLower(filepath.Ext(handler.Filename))
-		imagePath := filepath.Join("./uploads/", fileNames+extension)
-		/*if extension != ".png" {
-			imageToPngCommand := cmd.NewCmd("convert " + imagePath + " ./uploads/" + fileNames + ".png")
-			imageToPngCommand.Start()
-			fmt.Println("Converting image to png...")
-		}*/
-
 		// Open/Create temp file for image using name stored in the session store
-		f, err := os.OpenFile(imagePath, os.O_WRONLY|os.O_CREATE, 0666)
+		extension := strings.ToLower(filepath.Ext(handler.Filename))
+		imageFilename := fileNames + extension
+		fmt.Println("handler.Filename is: " + handler.Filename)
+		fmt.Println("filenames is:" + imageFilename)
+		f, err := os.OpenFile("./uploads/" + imageFilename, os.O_WRONLY|os.O_CREATE, 0666)
 		checkError(err)
-
 		defer f.Close()
+
 		_, err = io.Copy(f, file)
 		checkError(err)
+
+		// If image is not a .png format, convert to .png
+		if extension != ".png" {
+			imageToPngCommand := cmd.NewCmd("convert", "./uploads/" + imageFilename, "./uploads/" + fileNames + "." + consts.DefaultImageExtension)
+			s := <-imageToPngCommand.Start()
+			fmt.Println(s.Stdout)
+			// Remove old image
+			err = os.Remove("./uploads/" + imageFilename)
+			checkError(err)
+		}
 
 		// Return job id to client
 		w.Header().Set(consts.HttpContentType, consts.HttpMimeTextPlain)

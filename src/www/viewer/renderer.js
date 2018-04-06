@@ -45,6 +45,7 @@ function createScene(container) {
         near   = 1,
         far    = 10000;
     camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    console.log("camera instantiated: " + camera.toString());
     camera.position.z = 300;
 
     scene.add(camera);

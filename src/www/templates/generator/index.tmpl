@@ -66,16 +66,17 @@
 
             // Get percentage of completion from server
             function handleGcodeGeneration(response) {
+                let iframe = "<iframe id='viewer' src='/viewer/gcode_viewer.html' width='500' height='400' ></iframe>";
                 let percentage = 0;
                 let loadingBarUpdater = setInterval(function () {
                     $.ajax({
                         url: "/generator/queue/" + getJobId(),
                         type: "GET",
                         success: function (newPercentage) {
+                            let progressBar = $(".progress .progress-bar");
                             // Update loading bar percentage using percentage sent by server response
                             if (percentage !== newPercentage) {
                                 percentage = newPercentage;
-                                let progressBar = $(".progress .progress-bar");
                                 // Get percentage from server and update loading bar
                                 progressBar.attr("data-transitiongoal", percentage);
                                 progressBar.progressbar();
@@ -83,7 +84,15 @@
                                 if (percentage === "100") {
                                     async function  toPreview() {
                                         clearInterval(loadingBarUpdater);
-                                        await sleep(2000);
+                                        // Create new iframe and load gcode in it for viewer
+                                        if ($("#gcodeViewerContainer").has(document.getElementById("viewer")).length == 0) {
+                                            $("#gcodeViewerContainer").append(iframe);
+                                        }
+                                        $("#viewer").on("load", function () {
+                                            console.log("iframe loaded");
+                                            document.getElementById("viewer").contentWindow.loadGcodeFromServer(getJobId());
+                                        });
+                                        await sleep(1000);
                                         $(".generatorForm").slick("slickGoTo", 5);
                                     }
                                     toPreview();
@@ -92,24 +101,21 @@
                         }
                     });
                 }, 1500);
-
-                // Create new iframe and load gcode in it for viewer
-                let iframe = "<iframe id='viewer' src='/viewer/gcode_viewer.html' width='500' height='400'></iframe>";
-                $("#gcodeViewerContainer").append(iframe);
-                $("#viewer").on("load", function () {
-                    $("#viewer").contentWindow.loadGcodeFromServer(getJobId());
-                })
-
                 // Handle download button
                 $("#download").click(function () {
                     window.open('http://ggen.com:8080/generator/outputs/'+getJobId(), "_blank");
-                })
+                });
             }
         });
         $('#restartForm').click(function () {
+            let progressBar = $(".progress .progress-bar");
+            // Resets progress bar to value 0
+            resetProgressBar();
             $(".generatorForm").slick("slickGoTo", 1);
         });
         $('#makeAnotherModel').click(function () {
+            removeImage();
+            resetProgressBar();
             // Cancel all data
             $(".generatorForm").slick("slickGoTo", 0);
         });
@@ -120,20 +126,7 @@
             $(".generatorForm").slick("slickGoTo", 3);
         });
 
-        $('#removeImage').click(function () {
-            $.ajax({
-                url: '/generator/imageRemove/'+getJobId(),
-                type: 'DELETE',
-                success: function (result) {
-                    $("#forwardToGeneralSettings").prop("disabled", true);
-                    $("#brightnessSlider").mbsetVal(0);
-                    $("#contrastSlider").mbsetVal(0);
-                    canvas.clear();
-                    $("#canvasContainer").hide();
-                    $("#imageUpload").show();
-                }
-            });
-        });
+        $('#removeImage').click(removeImage);
 
         // Sliders brightness/contrast
         $("#brightnessSlider").mbSlider({
@@ -264,6 +257,28 @@
         }
     }
 
+    function removeImage() {
+        $.ajax({
+            url: '/generator/imageRemove/'+getJobId(),
+            type: 'DELETE',
+            success: function (result) {
+                Cookies.remove("ImageName");
+                $("#forwardToGeneralSettings").prop("disabled", true);
+                $("#brightnessSlider").mbsetVal(0);
+                $("#contrastSlider").mbsetVal(0);
+                canvas.clear();
+                $("#canvasContainer").hide();
+                $("#imageUpload").show();
+            }
+        });
+    }
+
+    function resetProgressBar() {
+        let progressBar = $(".progress .progress-bar");
+        progressBar.attr("data-transitiongoal", 0);
+        progressBar.progressbar();
+    }
+
     function getJobId() {
         console.log("getJobId(): " + Cookies.get("JobId"));
         return Cookies.get("JobId");
@@ -271,6 +286,7 @@
 
     function setJobId(jobId) {
         Cookies.set("JobId", jobId, { expires: 3 });
+        console.log("setJobId(): " + getJobId());
     }
 
     function sleep(ms) {

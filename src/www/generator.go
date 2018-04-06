@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"ggen/utils/consts"
 )
 
 type GeneratorJob struct {
@@ -39,7 +40,7 @@ func StartGeneratorJob(job *GeneratorJob, c chan *GeneratorJob) {
 	s := <-pwd.Start()
 	pwdOutput := s.Stdout[0]
 
-	imageFilepath := pwdOutput + "/uploads/" + imageFilename
+	imageFilepath := pwdOutput + "/uploads/" + imageFilename + "." + consts.DefaultImageExtension
 	tmpPath := pwdOutput + "/uploads/tmp/" // Remove newline byte
 	scadFilepath := tmpPath + imageFilenameNoExt + ".scad"
 
@@ -47,8 +48,10 @@ func StartGeneratorJob(job *GeneratorJob, c chan *GeneratorJob) {
 
 	// image to .scad
 	trace2scad := cmd.NewCmd("trace2scad", "-f", "0", "-e", "10", "-o", scadFilepath, imageFilepath)
+	fmt.Println(trace2scad.Args)
 	s = <-trace2scad.Start()
 	fmt.Println(s.Stdout)
+	fmt.Println(s.Stderr)
 
 	scadFile, err := os.OpenFile(scadFilepath, os.O_APPEND|os.O_WRONLY, 0600)
 	checkError(err)

@@ -15,7 +15,6 @@
         left: 0;
         right: 0;
         bottom: 0;
-        top: 40px;
         background-color: #000000;
       }
       .dg.main {
@@ -52,8 +51,9 @@
             $.ajax({
                 url: "/generator/outputs/"+jobId,
                 type: "GET",
+                cache: false,
                 success: function (response) {
-                    console.log(response);
+                    console.log("viewer response gcode is: " + response);
                     GCodeImporter.importText(response, onGCodeLoaded);
                 }
             })
