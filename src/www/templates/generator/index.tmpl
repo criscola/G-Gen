@@ -15,15 +15,6 @@
 <script type="text/javascript">
     let imageWidth = 550;
     let canvas;
-    let gcodeFileName;
-
-    // If current has not been assigned a session cookie yet, set default exp date of cookies 3 days from now
-    if (Cookies.get("UserSession") === undefined) {
-        let expiration = new Date();
-        // Expiration date will be from 3 days from now for all cookies
-        expiration.setHours(expiration.getHours()+24*3);
-        Cookies.set({ expires: expiration });
-    }
 
     $(document).ready(function () {
         $("#canvasContainer").hide();
@@ -48,7 +39,7 @@
             $(".generatorForm").slick("slickGoTo", 2);
 
             // Get parameters from inputs
-            console.log(getJobId());
+            console.log("params: " + getJobId());
             let formData = {
                 "jobId":            getJobId(),
                 "scaleFactor":      $("input[name=scaleFactor]").val(),
@@ -185,12 +176,6 @@
 
         });
 
-        // If cookie with imageName exists, create canvas with it
-        let cookieImage = Cookies.get("ImageName");
-        if (cookieImage !== undefined) {
-            console.log("imageName "+ cookieImage);
-            createCanvasFromImage(cookieImage);
-        }
     });
 
     Dropzone.options.imageUpload = {
@@ -214,6 +199,7 @@
             setJobId(response);
             createCanvasFromImage(response);
             Cookies.set("ImageName", response, { expires: 3 });
+            loadCookieValues();
         }
     };
 
@@ -289,6 +275,39 @@
         console.log("setJobId(): " + getJobId());
     }
 
+    function loadCookieValues() {
+        // If current has not been assigned a session cookie yet, set default exp date of cookies 3 days from now
+        if (Cookies.get("UserSession") === undefined) {
+            let expiration = new Date();
+            // Expiration date will be from 3 days from now for all cookies
+            expiration.setHours(expiration.getHours()+24*3);
+            Cookies.set({ expires: expiration });
+        }
+        // If cookie with imageName exists, create canvas with it
+        let cookieImage = Cookies.get("ImageName");
+        if (cookieImage !== undefined) {
+            createCanvasFromImage(cookieImage);
+        }
+        let scaleFactor = Cookies.get("ScaleFactor");
+        if (scaleFactor !== undefined) {
+            $("scaleFactor").val(scaleFactor);
+        } else {
+            Cookies.set("ScaleFactor", 125, { expires: 3 });
+        }
+        let modelThickness = Cookies.get("ModelThickness");
+        if (modelThickness!== undefined) {
+            $("modelThickness").val(modelThickness);
+        } else {
+            Cookies.set("ModelThickness", 2, { expires: 3 });
+        }
+        let travelSpeed = Cookies.get("TravelSpeed");
+        if (scaleFactor !== undefined) {
+            $("travelSpeed").val(travelSpeed);
+        } else {
+            Cookies.set("TravelSpeed", 4, { expires: 3 });
+        }
+    }
+
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
@@ -343,7 +362,7 @@
                             <label style="font-weight: bold;">Scale factor [mm]</label>
                         </td>
                         <td>
-                            <input name="scaleFactor" type="number" step="0.5" value="125">
+                            <input id="scaleFactor" name="scaleFactor" type="number" step="0.5" value="125">
                         </td>
                     </tr>
                     <tr>
@@ -351,7 +370,7 @@
                             <label style="font-weight: bold;">Model thickness [mm]</label>
                         </td>
                         <td>
-                            <input name="modelThickness" type="number" min="0" max="2000" step="1" value="2">
+                            <input id="modelThickness" name="modelThickness" type="number" min="0" max="2000" step="1" value="2">
                         </td>
                     </tr>
                     <tr>
@@ -359,7 +378,7 @@
                             <label style="font-weight: bold;">Travel speed [mm/s]</label>
                         </td>
                         <td>
-                            <input name="travelSpeed" type="number" min="0" max="2000" step="1" value="4">
+                            <input id="travelSpeed" name="travelSpeed" type="number" min="0" max="2000" step="1" value="4">
                         </td>
                     </tr>
                 </table>

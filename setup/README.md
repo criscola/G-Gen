@@ -1,0 +1,1 @@
+### # The "resources" folder must be copied into the Cura installation directory (after running the setup file) which will be located in /usr/local/cura-engine

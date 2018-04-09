@@ -11,6 +11,13 @@ import (
 	"ggen/utils/consts"
 )
 
+type GCodeDialect int
+
+const (
+	RepRap GCodeDialect = iota
+	Ultimaker
+)
+
 type GeneratorJob struct {
 	FileNames  string
 	StartTime  int64
@@ -23,7 +30,9 @@ type GeneratorParams struct {
 	ScaleFactor    int
 	ModelThickness int
 	TravelSpeed    int
+	Dialect			GCodeDialect
 }
+
 
 // StartGeneratorJob is used to start a generator job associated with a specific session
 func StartGeneratorJob(job *GeneratorJob, c chan *GeneratorJob) {
@@ -72,11 +81,15 @@ func StartGeneratorJob(job *GeneratorJob, c chan *GeneratorJob) {
 
 	job.updateCompletion(80, c)
 
-	gcodeFilepath := pwdOutput + "/outputs/" + imageFilenameNoExt + ".gcode"
 	// slice .stl to .gcode
-	slic3r := cmd.NewCmd("slic3r", stlFilepath, "--output", gcodeFilepath)
-	s = <-slic3r.Start()
-	fmt.Print(s.Stdout)
+	gcodeFilepath := pwdOutput + "/outputs/" + imageFilenameNoExt + ".gcode"
+	if job.Params.Dialect == RepRap {
+		slic3r := cmd.NewCmd("slic3r", stlFilepath, "--output", gcodeFilepath)
+		s = <-slic3r.Start()
+		fmt.Print(s.Stdout)
+	} else if job.Params.Dialect == Ultimaker {
+		cura := cmd.NewCmd("cura", "")
+	}
 
 	job.FinishTime = time.Now().Unix()
 	job.updateCompletion(100, c)
