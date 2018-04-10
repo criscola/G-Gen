@@ -5,7 +5,6 @@ package consts
  */
 const (
 	SessionName          = "UserSession"
-	//SessionImageFilename = "SessionImageFilename"
 	SessionGeneratorJob  = "SessionGeneratorJob"
 )
 
@@ -13,25 +12,24 @@ const (
  * HTTP REST
  */
 const (
-	HttpContentType   = "Content-Type"
-	HttpContentLength = "Content-Length"
-	HttpContentDisposition = "Content-Disposition"
-	HttpMimeTextPlain = "text/plain"
-	HttpMimeImageJpeg = "image/jpeg"
-	HttpMimeImagePng  = "image/png"
-	HttpMimeImageGif  				= "image/gif"
-	HttpMimeApplicationOctetStream  = "application/octet-stream"
+	HttpContentType   					= "Content-Type"
+	HttpContentLength 					= "Content-Length"
+	HttpContentDisposition				= "Content-Disposition"
+	HttpMimeTextPlain 					= "text/plain"
+	HttpMimeApplicationOctetStream  	= "application/octet-stream"
 )
 
 /**
  * Form values keys
  */
 const (
-	FormJobId			= "jobId"
 	FormImage       	= "image"
 	FormScaleFactor 	= "scaleFactor"
 	FormModelThickness 	= "modelThickness"
 	FormTravelSpeed 	= "travelSpeed"
+	FormGCodeDialect	= "gcodeDialect"
+	FormRepRap			= "RepRap"
+	FormUltimaker		= "Ultimaker"
 )
 
 /**

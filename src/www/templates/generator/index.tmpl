@@ -27,6 +27,9 @@
             swipeToSlide: false,
             touchMove: false,
         });
+
+        loadCookieValues();
+
         $('#forwardToGeneralSettings').click(function () {
             $(".generatorForm").slick("slickGoTo", 1);
         });
@@ -45,6 +48,7 @@
                 "scaleFactor":      $("input[name=scaleFactor]").val(),
                 "modelThickness":   $("input[name=modelThickness]").val(),
                 "travelSpeed":      $("input[name=travelSpeed]").val(),
+                "gcodeDialect":     $("#gcodeDialect option:selected").val(),
             }
 
             // Send parameters to server
@@ -199,7 +203,6 @@
             setJobId(response);
             createCanvasFromImage(response);
             Cookies.set("ImageName", response, { expires: 3 });
-            loadCookieValues();
         }
     };
 
@@ -306,6 +309,7 @@
         } else {
             Cookies.set("TravelSpeed", 4, { expires: 3 });
         }
+        // TODO: Gcode dialect select field
     }
 
     function sleep(ms) {
@@ -379,6 +383,17 @@
                         </td>
                         <td>
                             <input id="travelSpeed" name="travelSpeed" type="number" min="0" max="2000" step="1" value="4">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-right:10px;">
+                            <label style="font-weight: bold;">GCode dialect</label>
+                        </td>
+                        <td>
+                            <select id="gcodeDialect">
+                                <option value="RepRap">RepRap</option>
+                                <option value="Ultimaker">Ultimaker (UltiGCode)</option>
+                            </select>
                         </td>
                     </tr>
                 </table>

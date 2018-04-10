@@ -264,6 +264,9 @@ func StartGeneratorJobHandler(w http.ResponseWriter, r *http.Request, ps httprou
 			checkError(err)
 			travelSpeed, err := strconv.Atoi(r.FormValue(consts.FormTravelSpeed))
 			checkError(err)
+			if r.FormValue(consts.FormGCodeDialect) == "" {
+				panic("Error: gcodeDialect form value can't be nil")
+			}
 
 			genJob := getGeneratorJobs(session)[id]
 
@@ -271,6 +274,7 @@ func StartGeneratorJobHandler(w http.ResponseWriter, r *http.Request, ps httprou
 				ScaleFactor:    scaleFactor,
 				ModelThickness: modelThickness,
 				TravelSpeed:    travelSpeed,
+				Dialect: 		r.FormValue(consts.FormGCodeDialect),
 			}
 
 			go StartGeneratorJob(genJob, jobCompletion)

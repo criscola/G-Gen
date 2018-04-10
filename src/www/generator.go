@@ -9,13 +9,7 @@ import (
 	"strings"
 	"time"
 	"ggen/utils/consts"
-)
-
-type GCodeDialect int
-
-const (
-	RepRap GCodeDialect = iota
-	Ultimaker
+	"ggen/utils/config"
 )
 
 type GeneratorJob struct {
@@ -30,7 +24,7 @@ type GeneratorParams struct {
 	ScaleFactor    int
 	ModelThickness int
 	TravelSpeed    int
-	Dialect			GCodeDialect
+	Dialect			string
 }
 
 
@@ -77,18 +71,28 @@ func StartGeneratorJob(job *GeneratorJob, c chan *GeneratorJob) {
 
 	openscad := cmd.NewCmd("openscad", "-o", stlFilepath, scadFilepath)
 	s = <-openscad.Start()
-	fmt.Println(s.Stdout)
+	fmt.Println("openscad: ")
+	fmt.Print(s.Stdout)
 
 	job.updateCompletion(80, c)
 
 	// slice .stl to .gcode
 	gcodeFilepath := pwdOutput + "/outputs/" + imageFilenameNoExt + ".gcode"
-	if job.Params.Dialect == RepRap {
+	fmt.Println("DIALECT IS: " + job.Params.Dialect + " CONSTS IS: " + consts.FormRepRap + " " + consts.FormUltimaker)
+	if job.Params.Dialect == consts.FormRepRap {
+		fmt.Println("Slicing with slic3r...")
 		slic3r := cmd.NewCmd("slic3r", stlFilepath, "--output", gcodeFilepath)
 		s = <-slic3r.Start()
 		fmt.Print(s.Stdout)
-	} else if job.Params.Dialect == Ultimaker {
-		cura := cmd.NewCmd("cura", "")
+		fmt.Print(s.Stderr)
+	} else if job.Params.Dialect == consts.FormUltimaker {
+		fmt.Println("Slicing with ultimaker...")
+		cura := cmd.NewCmd("CuraEngine", "slice", "-v", "-j", config.ResourcesDirPath + "/fdmprinter.def.json",
+			"-o", gcodeFilepath, "-l", stlFilepath, "-s", "expand_skins_expand_distance=0",
+			"speed_infill=" + strconv.Itoa(job.Params.TravelSpeed))
+		s = <-cura.Start()
+		fmt.Print(s.Stderr)
+		fmt.Print(s.Stdout)
 	}
 
 	job.FinishTime = time.Now().Unix()
