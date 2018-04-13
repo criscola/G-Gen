@@ -61,7 +61,7 @@
 
             // Get percentage of completion from server
             function handleGcodeGeneration(response) {
-                let iframe = "<iframe id='viewer' src='/viewer/gcode_viewer.html' width='500' height='400' ></iframe>";
+                let iframe = "<iframe id='viewer' src='/viewer/gcode_viewer.html'  ></iframe>";
                 let percentage = 0;
                 let loadingBarUpdater = setInterval(function () {
                     $.ajax({
@@ -79,14 +79,9 @@
                                 if (percentage === "100") {
                                     async function  toPreview() {
                                         clearInterval(loadingBarUpdater);
-                                        // Create new iframe and load gcode in it for viewer
-                                        if ($("#gcodeViewerContainer").has(document.getElementById("viewer")).length == 0) {
-                                            $("#gcodeViewerContainer").append(iframe);
-                                        }
-                                        $("#viewer").on("load", function () {
-                                            console.log("iframe loaded");
-                                            document.getElementById("viewer").contentWindow.loadGcodeFromServer(getJobId());
-                                        });
+                                        // Add iframe source attribute and load gcode in it
+                                        console.log("loaded gcode");
+                                        loadGcodeToViewer();
                                         await sleep(1000);
                                         $(".generatorForm").slick("slickGoTo", 5);
                                     }
@@ -96,12 +91,14 @@
                         }
                     });
                 }, 1500);
-                // Handle download button
-                $("#download").click(function () {
-                    window.open('http://ggen.com:8080/generator/outputs/'+getJobId(), "_blank");
-                });
             }
         });
+
+        // Handle download button
+        $("#download").click(function () {
+            window.open('http://ggen.com:8080/generator/outputs/'+getJobId(), "_blank");
+        });
+
         $('#restartForm').click(function () {
             let progressBar = $(".progress .progress-bar");
             // Resets progress bar to value 0
@@ -179,7 +176,6 @@
             }
 
         });
-
     });
 
     Dropzone.options.imageUpload = {
@@ -207,7 +203,17 @@
     };
 
     function createCanvasFromImage(id) {
-        if (id !== "") {
+        let imageUrl = "../uploads/" + id + "?new=";
+        let flag = false;
+        $.ajax({
+            url: imageUrl,
+            type: "GET",
+            async: false,
+            success: function () {
+                flag = true;
+            }
+        });
+        if (flag && id !== "") {
             $("#canvasContainer").show();
             let canvasContainer;
 
@@ -221,8 +227,9 @@
                 canvas = new fabric.StaticCanvas(canvasContainer, {width: 0, height: 0});
                 canvas.hoverCursor = "default";
             }
+
             // Add image to canvas
-            fabric.Image.fromURL("../uploads/" + id + "?new=", function (oImg) {
+            fabric.Image.fromURL(imageUrl, function (oImg) {
                 let scale = imageWidth / oImg.width;
 
                 oImg.set({
@@ -310,6 +317,11 @@
             Cookies.set("TravelSpeed", 4, { expires: 3 });
         }
         // TODO: Gcode dialect select field
+    }
+
+    function loadGcodeToViewer() {
+        console.log("loadGcodeFromServer fired with job id" + getJobId());
+        document.getElementById("viewer").contentWindow.loadGcodeFromServer(getJobId());
     }
 
     function sleep(ms) {
@@ -415,7 +427,7 @@
         <fieldset>
             <legend class="slideTitle">Preview</legend>
             <div id="gcodeViewerContainer">
-
+                <iframe id="viewer" src="/viewer/gcode_viewer.html" width='500' height='400'></iframe>
             </div>
             <input type="button" id="download" value="Download GCode file" />
             <button id="restartForm" type="button">Remake it</button>

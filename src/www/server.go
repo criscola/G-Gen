@@ -83,14 +83,6 @@ func ImageGetHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 
 		fileName := job.FileNames + "." + consts.DefaultImageExtension
 		fmt.Println("image fileName: " + fileName)
-		// If the extension is jpg convert to jpeg for the content-type response
-		/*
-		extension := strings.TrimPrefix(filepath.Ext(fileName), ".")
-		if strings.EqualFold(extension, "jpg") {
-			extension = "jpeg"
-		}
-		w.Header().Set(consts.HttpContentType, "image/"+extension)
-		*/
 
 		w.Header().Set(consts.HttpContentType, "image/"+consts.DefaultImageExtension)
 		// Read image from disk

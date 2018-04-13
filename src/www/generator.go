@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
+	"ggen/utils/config"
+	"ggen/utils/consts"
 	"github.com/go-cmd/cmd"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
-	"ggen/utils/consts"
-	"ggen/utils/config"
 )
 
 type GeneratorJob struct {
@@ -24,9 +24,8 @@ type GeneratorParams struct {
 	ScaleFactor    int
 	ModelThickness int
 	TravelSpeed    int
-	Dialect			string
+	Dialect        string
 }
-
 
 // StartGeneratorJob is used to start a generator job associated with a specific session
 func StartGeneratorJob(job *GeneratorJob, c chan *GeneratorJob) {
@@ -46,6 +45,16 @@ func StartGeneratorJob(job *GeneratorJob, c chan *GeneratorJob) {
 	imageFilepath := pwdOutput + "/uploads/" + imageFilename + "." + consts.DefaultImageExtension
 	tmpPath := pwdOutput + "/uploads/tmp/" // Remove newline byte
 	scadFilepath := tmpPath + imageFilenameNoExt + ".scad"
+
+	// Replace transparent pixels with white pixels
+	//fillTransparentPixels := cmd.NewCmd("convert", "-flatten", imageFilepath, imageFilepath)
+	/*
+	fillTransparentPixels := cmd.NewCmd("convert", "-flatten", imageFilepath, imageFilepath)
+
+	fmt.Println("imageFilepath:", imageFilepath)
+	s = <-fillTransparentPixels.Start()
+	fmt.Println("convert: ", s.Stdout)
+	fmt.Println("convert: ", s.Stderr)*/
 
 	job.updateCompletion(40, c)
 
@@ -87,10 +96,13 @@ func StartGeneratorJob(job *GeneratorJob, c chan *GeneratorJob) {
 		fmt.Print(s.Stderr)
 	} else if job.Params.Dialect == consts.FormUltimaker {
 		fmt.Println("Slicing with ultimaker...")
-		cura := cmd.NewCmd("CuraEngine", "slice", "-v", "-j", config.ResourcesDirPath + "/fdmprinter.def.json",
-			"-o", gcodeFilepath, "-l", stlFilepath, "-s", "expand_skins_expand_distance=0",
-			"speed_infill=" + strconv.Itoa(job.Params.TravelSpeed))
+		cura := cmd.NewCmd("CuraEngine", "slice", "-v", "-j", config.ResourcesDirPath+"/fdmprinter.def.json",
+			"-o", gcodeFilepath, "-l", stlFilepath,
+			"-s", "expand_skins_expand_distance=0",
+			"-s", "speed_infill="+strconv.Itoa(job.Params.TravelSpeed),
+		)
 		s = <-cura.Start()
+		fmt.Println(cura.Args)
 		fmt.Print(s.Stderr)
 		fmt.Print(s.Stdout)
 	}

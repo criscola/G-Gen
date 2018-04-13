@@ -2,4 +2,4 @@
 
 
 
-### You must also change the "machine_gcode_flavor" --> "default_value" setting from "RepRap (Marlin/Sprinter)" to "UltiGCode" in the "fdmprinter.def.json" file located in the "resources/definitions" folder.
+### You must also change the "machine_gcode_flavor" => "default_value" setting from "RepRap (Marlin/Sprinter)" to "UltiGCode" in the "fdmprinter.def.json" file located in the "resources/definitions" folder.
