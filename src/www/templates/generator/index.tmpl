@@ -24,7 +24,6 @@
             infinite: false,
             draggable: false,
             swipe: false,
-            swipeToSlide: false,
             touchMove: false,
         });
 
@@ -44,11 +43,11 @@
             // Get parameters from inputs
             console.log("params: " + getJobId());
             let formData = {
-                "jobId":            getJobId(),
-                "scaleFactor":      $("input[name=scaleFactor]").val(),
-                "modelThickness":   $("input[name=modelThickness]").val(),
-                "travelSpeed":      $("input[name=travelSpeed]").val(),
-                "gcodeDialect":     $("#gcodeDialect option:selected").val(),
+                "jobId": getJobId(),
+                "scaleFactor": $("input[name=scaleFactor]").val(),
+                "modelThickness": $("input[name=modelThickness]").val(),
+                "travelSpeed": $("input[name=travelSpeed]").val(),
+                "gcodeDialect": $("#gcodeDialect option:selected").val(),
             }
 
             // Send parameters to server
@@ -77,7 +76,7 @@
                                 progressBar.progressbar();
                                 // If percentage is 100, wait a sec then slick to the preview slide
                                 if (percentage === "100") {
-                                    async function  toPreview() {
+                                    async function toPreview() {
                                         clearInterval(loadingBarUpdater);
                                         // Add iframe source attribute and load gcode in it
                                         console.log("loaded gcode");
@@ -96,7 +95,7 @@
 
         // Handle download button
         $("#download").click(function () {
-            window.open('http://ggen.com:8080/generator/outputs/'+getJobId(), "_blank");
+            window.open('http://ggen.com:8080/generator/outputs/' + getJobId(), "_blank");
         });
 
         $('#restartForm').click(function () {
@@ -224,7 +223,7 @@
                 // Append new canvas to the canvasContainer div
                 $("#canvasContainer").append(canvasContainer);
                 // Create new fabric.Canvas referring to the new canvas element
-                canvas = new fabric.StaticCanvas(canvasContainer, {width: 0, height: 0});
+                canvas = new fabric.StaticCanvas(canvasContainer, { width: 0, height: 0 });
                 canvas.hoverCursor = "default";
             }
 
@@ -255,7 +254,7 @@
 
     function removeImage() {
         $.ajax({
-            url: '/generator/imageRemove/'+getJobId(),
+            url: '/generator/imageRemove/' + getJobId(),
             type: 'DELETE',
             success: function (result) {
                 Cookies.remove("ImageName");
@@ -290,7 +289,7 @@
         if (Cookies.get("UserSession") === undefined) {
             let expiration = new Date();
             // Expiration date will be from 3 days from now for all cookies
-            expiration.setHours(expiration.getHours()+24*3);
+            expiration.setHours(expiration.getHours() + 24 * 3);
             Cookies.set({ expires: expiration });
         }
         // If cookie with imageName exists, create canvas with it
@@ -305,7 +304,7 @@
             Cookies.set("ScaleFactor", 125, { expires: 3 });
         }
         let modelThickness = Cookies.get("ModelThickness");
-        if (modelThickness!== undefined) {
+        if (modelThickness !== undefined) {
             $("modelThickness").val(modelThickness);
         } else {
             Cookies.set("ModelThickness", 2, { expires: 3 });
@@ -347,7 +346,7 @@
                     </td>
                     <td>
                         <div id="brightnessSlider" class="mb_slider" data-property="{minVal:-1,rangeColor:'green', maxVal:1, startAt:0, grid:0.003921}"
-                             style="display:block;"></div>
+                            style="display:block;"></div>
                     </td>
                 </tr>
                 <tr>
@@ -356,7 +355,7 @@
                     </td>
                     <td>
                         <div id="contrastSlider" class="mb_slider" data-property="{minVal:-1,rangeColor:'green', maxVal:1, startAt:0, grid:0.003921}"
-                             style="display:block;"></div>
+                            style="display:block;"></div>
                     </td>
                 </tr>
             </table>
