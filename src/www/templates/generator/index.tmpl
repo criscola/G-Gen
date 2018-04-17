@@ -17,6 +17,9 @@
     let canvas;
 
     $(document).ready(function () {
+
+        fabric.textureSize = 4096;
+
         $("#canvasContainer").hide();
 
         $(".generatorForm").slick({
@@ -37,7 +40,7 @@
         });
         // Send parameters to server
         $('#forwardToLoadingScreen').click(function () {
-            $('.progress .progress-bar').progressbar({ display_text: 'center' });
+            $('#progressBar').progressbar({ display_text: 'center' });
             $(".generatorForm").slick("slickGoTo", 2);
 
             // Get parameters from inputs
@@ -60,14 +63,13 @@
 
             // Get percentage of completion from server
             function handleGcodeGeneration(response) {
-                let iframe = "<iframe id='viewer' src='/viewer/gcode_viewer.html'  ></iframe>";
                 let percentage = 0;
                 let loadingBarUpdater = setInterval(function () {
                     $.ajax({
                         url: "/generator/queue/" + getJobId(),
                         type: "GET",
                         success: function (newPercentage) {
-                            let progressBar = $(".progress .progress-bar");
+                            let progressBar = $("#progressBar");
                             // Update loading bar percentage using percentage sent by server response
                             if (percentage !== newPercentage) {
                                 percentage = newPercentage;
@@ -78,7 +80,7 @@
                                 if (percentage === "100") {
                                     async function toPreview() {
                                         clearInterval(loadingBarUpdater);
-                                        // Add iframe source attribute and load gcode in it
+                                        // Load gcode into viewer   
                                         console.log("loaded gcode");
                                         loadGcodeToViewer();
                                         await sleep(1000);
@@ -99,7 +101,7 @@
         });
 
         $('#restartForm').click(function () {
-            let progressBar = $(".progress .progress-bar");
+            let progressBar = $("#progressBar");
             // Resets progress bar to value 0
             resetProgressBar();
             $(".generatorForm").slick("slickGoTo", 1);
@@ -125,15 +127,19 @@
                 return Number(val).toFixed(2);
             },
             onSlide: function (o) {
+                console.log("onslide fired");
                 if (canvas != null) {
+                    // Check if the image contained in canvas exists
                     if (canvas.getObjects()[0] != null) {
                         let val = $(o).mbgetVal();
                         img = canvas.getObjects()[0];
 
-                        if (img.filters[0] != null) {
-                            img.filters[0]["brightness"] = parseFloat(val);
+                        if (img.filters[1] != null) {
+                            console.log("1");
+                            img.filters[1]["brightness"] = parseFloat(val);
                         } else {
-                            img.filters[0] = new fabric.Image.filters.Brightness({ brightness: parseFloat(val) });
+                            console.log("2");
+                            img.filters[1] = new fabric.Image.filters.Brightness({ brightness: parseFloat(val) });
                         }
 
                         img.applyFilters();
@@ -142,6 +148,8 @@
                 }
             },
             onStop: function (o) {
+                console.log("onslide fired");
+
                 // If user didn't upload an image, reset slider value to 0
                 if (canvas == null || canvas.getObjects()[0] == null) {
                     $("#brightnessSlider").mbsetVal(0);
@@ -156,11 +164,10 @@
                 if (canvas != null && canvas.getObjects()[0] != null) {
                     let val = $(o).mbgetVal();
                     let img = canvas.getObjects()[0];
-
-                    if (img.filters[1] != null) {
-                        img.filters[1]["contrast"] = parseFloat(val);
+                    if (img.filters[2] != null) {
+                        img.filters[2]["contrast"] = parseFloat(val);
                     } else {
-                        img.filters[1] = new fabric.Image.filters.Contrast({ contrast: parseFloat(val) });
+                        img.filters[2] = new fabric.Image.filters.Contrast({ contrast: parseFloat(val) });
                     }
 
                     img.applyFilters();
@@ -241,7 +248,13 @@
                     hasRotatingPoint: false,
 
                 });
-
+                /*
+                                let resize = new fabric.Image.filters.Resize();
+                                resize.scaleX = scale;
+                                resize.scaleY = scale;
+                                oImg.filters.push(resize);
+                                oImg.applyFilters();
+                */
                 canvas.setWidth(imageWidth);
                 canvas.setHeight(oImg.height * scale);
                 canvas.add(oImg);
@@ -269,7 +282,7 @@
     }
 
     function resetProgressBar() {
-        let progressBar = $(".progress .progress-bar");
+        let progressBar = $("#progressBar");
         progressBar.attr("data-transitiongoal", 0);
         progressBar.progressbar();
     }
@@ -418,7 +431,7 @@
     <!-- Loading slide -->
     <div>
         <div class="progress progress-striped">
-            <div class="progress-bar" role="progressbar" data-transitiongoal="0"></div>
+            <div id="progressBar" class="progress-bar" role="progressbar" data-transitiongoal="0"></div>
         </div>
     </div>
     <!-- Preview slide -->
