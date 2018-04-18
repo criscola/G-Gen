@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?><project name="Untitled Gantt Project" company="" webLink="http://" view-date="2018-01-14" view-index="0" gantt-divider-location="691" resource-divider-location="300" version="2.8.5" locale="en_US">
+<?xml version="1.0" encoding="UTF-8"?><project name="Untitled Gantt Project" company="" webLink="http://" view-date="2018-01-01" view-index="0" gantt-divider-location="691" resource-divider-location="300" version="2.8.7" locale="it_CH">
     <description/>
     <view zooming-state="default:6" id="gantt-chart">
-        <field id="tpd3" name="Name" width="330" order="0"/>
-        <field id="tpd4" name="Begin date" width="163" order="1"/>
-        <field id="tpd5" name="End date" width="194" order="2"/>
+        <field id="tpd3" name="Nome" width="330" order="0"/>
+        <field id="tpd4" name="Data d'inizio" width="163" order="1"/>
+        <field id="tpd5" name="Data di fine" width="194" order="2"/>
     </view>
     <view id="resource-table">
-        <field id="0" name="Name" width="210" order="0"/>
-        <field id="1" name="Default role" width="86" order="1"/>
+        <field id="0" name="Nome" width="210" order="0"/>
+        <field id="1" name="Ruolo predefinito" width="86" order="1"/>
     </view>
     <!-- -->
     <calendars>
@@ -82,8 +82,8 @@
                 <depend id="3" type="2" difference="0" hardness="Strong"/>
             </task>
         </task>
-        <task id="3" name="Testing &amp; debugging" color="#8cb6ce" meeting="false" start="2018-03-29" duration="7" complete="0" expand="true"/>
-        <task id="4" name="Documentazione" meeting="false" start="2018-01-17" duration="54" complete="0" expand="true"/>
+        <task id="3" name="Testing &amp; debugging" color="#8cb6ce" meeting="false" start="2018-03-29" duration="14" complete="0" expand="true"/>
+        <task id="4" name="Documentazione" meeting="false" start="2018-01-17" duration="59" complete="0" expand="true"/>
     </tasks>
     <resources/>
     <allocations/>
